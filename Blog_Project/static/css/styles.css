@@ -1,0 +1,296 @@
+/* Global variables for Light/Dark mode */
+:root {
+    --primary-color: #6366f1;
+    --secondary-color: #ec4899;
+    --background-light: #f8fafc;
+    --text-light: #1e293b;
+    --card-bg-light: #ffffff;
+    --border-light: #e2e8f0;
+
+    --background-dark: #0f172a;
+    --text-dark: #e2e8f0;
+    /* Off-white for better readability */
+    --text-muted-dark: #cbd5e1;
+    --card-bg-dark: #1e293b;
+    --border-dark: #334155;
+
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+
+    --transition-speed: 0.3s;
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+[data-theme="dark"] {
+    --background: var(--background-dark);
+    --text: var(--text-dark);
+    --card-bg: var(--card-bg-dark);
+    --border: var(--border-dark);
+    --nav-bg: rgba(15, 23, 42, 0.95);
+    --muted: var(--text-muted-dark);
+}
+
+[data-theme="light"] {
+    --background: var(--background-light);
+    --text: var(--text-light);
+    --card-bg: var(--card-bg-light);
+    --border: var(--border-light);
+    --nav-bg: rgba(255, 255, 255, 0.95);
+    --muted: #64748b;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: var(--font-body);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Typography & Animations */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+.animate-hover {
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.animate-hover:hover {
+    transform: translateY(-2px);
+    color: var(--primary-color);
+}
+
+/* Navbar */
+.navbar {
+    background: var(--nav-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    transition: all var(--transition-speed);
+    padding: 0.8rem 0;
+    margin-bottom: 0 !important;
+    /* Remove gap */
+}
+
+.navbar-brand {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: transform 0.3s;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+.nav-link {
+    color: var(--text) !important;
+    font-weight: 500;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+    transform: translateY(-1px);
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    width: 100%;
+    /* Fixed 150px height as requested */
+    height: 150px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    margin-bottom: 2rem;
+}
+
+.hero-overlay {
+    background: rgba(0, 0, 0, 0.3);
+    /* Slight overlay just for text pop if needed, else transparent */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Transparent Hero Cards */
+.hero-card-transparent {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: white;
+    /* Text must pop against the image */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Content Cards */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Animated style */
+}
+
+.card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: var(--primary-color);
+}
+
+.card-title {
+    color: var(--text);
+}
+
+.card-text {
+    color: var(--muted);
+}
+
+/* Footer */
+.footer {
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    /* Reduced padding */
+    margin-top: auto;
+    width: 100%;
+}
+
+.social-icon {
+    color: var(--text);
+    font-size: 1.5rem;
+    transition: transform 0.3s, color 0.3s;
+}
+
+.social-icon:hover {
+    color: var(--secondary-color);
+    transform: rotate(15deg) scale(1.2);
+}
+
+/* Auth Pages Styling */
+.auth-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+}
+
+/* Form inputs */
+.form-control {
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+}
+
+.form-control:focus {
+    background-color: var(--background);
+    color: var(--text);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+[data-theme="light"] .form-control {
+    border-color: #10b981;
+}
+
+[data-theme="light"] .form-control:focus {
+    border-color: #059669;
+}
+
+[data-theme="light"] .form-control::placeholder {
+    color: #10b981;
+}
+
+[data-theme="dark"] .form-control::placeholder {
+    color: #94a3b8;
+}
+
+/* Utils */
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Marquee */
+.marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 10px 0;
+    /* No background */
+    margin-bottom: 0;
+}
+
+.marquee-content {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 20s linear infinite;
+    color: white;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 1.2rem;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(-100%, 0);
+    }
+}
+
+/* Full Width Utility */
+.container-fluid-custom {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}

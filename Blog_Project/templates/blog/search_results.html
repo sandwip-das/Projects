@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+    <h3 class="mb-4">Search Results for "{{ query }}"</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for post in results %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
+                {% if post.featured_image %}
+                <img src="{{ post.featured_image.url }}" class="card-img-top" alt="{{ post.title }}"
+                    style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-secondary" style="height: 200px;"></div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title fw-bold"><a href="{{ post.get_absolute_url }}"
+                            class="text-decoration-none text-reset">{{ post.title }}</a></h5>
+                    <p class="card-text text-muted">{{ post.content|striptags|truncatewords:20 }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-warning">No results found for your query.</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

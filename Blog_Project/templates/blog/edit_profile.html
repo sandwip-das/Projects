@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">View Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">Edit Profile</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-5">
+                    <h4 class="mb-4">Update Profile</h4>
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <h5 class="mb-3 text-muted">Account Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name</label>
+                                {{ u_form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name</label>
+                                {{ u_form.last_name }}
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Email</label>
+                            {{ u_form.email }}
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mb-3 text-muted mt-4">Personal Details</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Profile Picture</label>
+                            {{ p_form.profile_picture }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bio</label>
+                            {{ p_form.bio }}
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Profession</label>
+                                {{ p_form.profession }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Mobile Number</label>
+                                {{ p_form.mobile_number }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Current City</label>
+                                {{ p_form.current_city }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Country</label>
+                                {{ p_form.country }}
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Educational Qualifications</label>
+                            {{ p_form.educational_qualifications }}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary px-5">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

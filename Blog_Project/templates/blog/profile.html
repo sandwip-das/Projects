@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">View Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'edit_profile' %}">Edit Profile</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-5">
+                    <div class="row">
+                        <div class="col-md-4 text-center border-end">
+                            {% if user.profile.profile_picture %}
+                            <img src="{{ user.profile.profile_picture.url }}" class="img-thumbnail rounded-circle mb-3"
+                                style="width: 150px; height: 150px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white mx-auto mb-3"
+                                style="width: 150px; height: 150px; font-size: 3rem;">
+                                {{ user.username|first|upper }}
+                            </div>
+                            {% endif %}
+                            <h4 class="fw-bold">{{ user.first_name }} {{ user.last_name }}</h4>
+                            <p class="text-muted">@{{ user.username }}</p>
+                        </div>
+                        <div class="col-md-8 ps-md-5">
+                            <h5 class="mb-4 text-primary">About</h5>
+
+                            <dl class="row">
+                                <dt class="col-sm-4 text-muted">Profession</dt>
+                                <dd class="col-sm-8">{{ user.profile.profession|default:"Not specified" }}</dd>
+
+                                <dt class="col-sm-4 text-muted">Email</dt>
+                                <dd class="col-sm-8">{{ user.email }}</dd>
+
+                                <dt class="col-sm-4 text-muted">Mobile</dt>
+                                <dd class="col-sm-8">{{ user.profile.mobile_number|default:"Not specified" }}</dd>
+
+                                <dt class="col-sm-4 text-muted">Location</dt>
+                                <dd class="col-sm-8">
+                                    {% if user.profile.current_city %}
+                                    {{ user.profile.current_city }}, {{ user.profile.country }}
+                                    {% else %}
+                                    Not specified
+                                    {% endif %}
+                                </dd>
+                            </dl>
+
+                            <hr>
+
+                            <h5 class="my-4 text-primary">Details</h5>
+                            <div class="mb-3">
+                                <span class="fw-bold d-block text-muted mb-1">Bio</span>
+                                <p>{{ user.profile.bio|default:"No bio available."|linebreaks }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <span class="fw-bold d-block text-muted mb-1">Education</span>
+                                <p>{{ user.profile.educational_qualifications|default:"Not specified"|linebreaks }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

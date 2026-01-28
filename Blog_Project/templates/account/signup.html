@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load allauth account %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-gradient">Create Account</h2>
+            <p class="text-muted">Join our community of professionals.</p>
+        </div>
+
+        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+            {% csrf_token %}
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                {% for field in form %}
+                {% for error in field.errors %}
+                <p class="mb-0 small">{{ field.label }}: {{ error }}</p>
+                {% endfor %}
+                {% endfor %}
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <!-- Manual rendering to ensure style control and skip email if strictly not needed in view even if form has it, though normally we render form -->
+            {% for field in form %}
+            {% if field.name != 'email' %}
+            <div class="mb-3">
+                <label class="form-label ms-1 small text-muted fw-bold">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <small class="form-text text-muted d-block mt-1" style="font-size: 0.75rem;">{{ field.help_text
+                    }}</small>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+
+            <button class="btn btn-primary w-100 py-2 rounded-pill fw-bold mt-3 mb-4" type="submit">{% trans "Sign Up"
+                %}</button>
+
+            <div class="text-center position-relative mb-4">
+                <hr class="text-muted opacity-25">
+                <span class="position-absolute top-50 start-50 translate-middle bg-card px-3 text-muted small">Or</span>
+            </div>
+
+            <div class="text-center">
+                <a href="{% provider_login_url 'google' %}"
+                    class="btn btn-outline-danger w-100 rounded-pill py-2 fw-medium transition-zoom"><i
+                        class="fab fa-google me-2"></i>Sign up with Google</a>
+            </div>
+
+        </form>
+        <div class="text-center mt-4">
+            <p class="small text-muted mb-0">Already have an account? <a href="{{ login_url }}"
+                    class="text-primary fw-bold text-decoration-none">Sign In</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add form-control class to all inputs dynamically if they don't have it
+    document.querySelectorAll('.signup input').forEach(input => {
+        input.classList.add('form-control');
+    });
+</script>
+{% endblock %}
