@@ -79,6 +79,18 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('post_detail', kwargs={'slug': self.slug})
 
+    @property
+    def total_likes(self):
+        return self.interactions.filter(interaction_type='like').count()
+
+    @property
+    def total_dislikes(self):
+        return self.interactions.filter(interaction_type='dislike').count()
+
+    @property
+    def total_comments(self):
+        return self.comments.count()
+
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE)

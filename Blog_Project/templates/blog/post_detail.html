@@ -2,116 +2,202 @@
 {% load static %}
 
 {% block content %}
-<div class="container my-5">
+<div class="container-fluid px-4 px-lg-5 my-4 animate-load">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Article Header -->
-            <div class="mb-4 text-center">
-                <span class="badge bg-primary mb-2">{{ post.category.name }}</span>
-                <h1 class="fw-bolder mb-1">{{ post.title }}</h1>
-                <div class="text-muted fst-italic mb-2">
-                    Posted on {{ post.created_at|date:"F d, Y" }} by {{
-                    post.author.get_full_name|default:post.author.username }}
-                </div>
-                <!-- Tags -->
-                <div>
-                    {% for tag in post.tags.all %}
-                    <span class="badge bg-secondary text-decoration-none link-light">{{ tag.name }}</span>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Preview Image -->
-            {% if post.featured_image %}
-            <figure class="mb-4">
-                <img class="img-fluid rounded shadow-sm" src="{{ post.featured_image.url }}" alt="..."
-                    style="width:100%; max-height:500px; object-fit:cover;">
-            </figure>
-            {% endif %}
-
-            <!-- Post Content -->
-            <section class="mb-5 post-content fs-5" style="line-height: 1.8;">
-                {{ post.content|safe|linebreaks }}
-            </section>
-
-            <!-- Interaction Section -->
-            <div class="d-flex align-items-center justify-content-between p-3 border rounded mb-5 bg-card">
-                <div class="d-flex gap-3">
-                    <!-- Like Form -->
-                    <form action="{% url 'post_interaction' post.slug %}" method="POST" class="d-inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="interaction_type" value="like">
-                        <button type="submit"
-                            class="btn {% if user_interaction == 'like' %}btn-primary{% else %}btn-outline-primary{% endif %} position-relative">
-                            <i class="fas fa-thumbs-up me-1"></i> {{ likes_count }}
-                        </button>
-                    </form>
-                    <!-- Dislike Form -->
-                    <form action="{% url 'post_interaction' post.slug %}" method="POST" class="d-inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="interaction_type" value="dislike">
-                        <button type="submit"
-                            class="btn {% if user_interaction == 'dislike' %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                            <i class="fas fa-thumbs-down me-1"></i> {{ dislikes_count }}
-                        </button>
-                    </form>
-                </div>
-                <div class="text-muted">
-                    <i class="fas fa-eye me-1"></i> {{ post.views_count }} Views
-                </div>
-            </div>
-
-            <!-- Comments Section -->
-            <section class="mb-5">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h4 class="mb-4">Comments ({{ comments.count }})</h4>
-
-                        <!-- Comment Form -->
-                        {% if user.is_authenticated %}
-                        <form class="mb-5" action="{% url 'add_comment' post.slug %}" method="POST">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                {{ comment_form.content }}
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary px-4 rounded-pill">Post Comment</button>
-                            </div>
-                        </form>
-                        {% else %}
-                        <div class="alert alert-info mb-4">Please <a href="{% url 'account_login' %}"
-                                class="alert-link">login</a> to join the conversation.</div>
-                        {% endif %}
-
-                        <!-- Comments List -->
-                        {% for comment in comments %}
-                        <div class="d-flex mb-4 p-3 rounded" style="background-color: var(--background);">
-                            <div class="flex-shrink-0">
-                                {% if comment.user.profile.profile_picture %}
-                                <img class="rounded-circle" src="{{ comment.user.profile.profile_picture.url }}"
-                                    alt="..." width="50" height="50" style="object-fit:cover;">
+        <!-- Main Content (Centered, slightly constrained for readability but wider than before) -->
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg overflow-hidden">
+                <!-- Post Image -->
+                {% if post.featured_image %}
+                <div class="position-relative" style="height: 450px;">
+                    <img src="{{ post.featured_image.url }}" class="w-100 h-100 object-fit-cover"
+                        alt="{{ post.title }}">
+                    <div class="position-absolute bottom-0 start-0 w-100 p-5"
+                        style="background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);">
+                        <span class="badge bg-primary mb-2 shadow-sm">{{ post.category.name }}</span>
+                        <h1 class="fw-bold text-white mb-3 display-5 text-shadow">{{ post.title }}</h1>
+                        <div class="d-flex align-items-center text-white-50 small">
+                            <div class="d-flex align-items-center me-4">
+                                {% if post.author.profile.profile_picture %}
+                                <img src="{{ post.author.profile.profile_picture.url }}"
+                                    class="rounded-circle me-2 border border-2 border-white"
+                                    style="width: 40px; height: 40px; object-fit: cover;">
                                 {% else %}
-                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
-                                    style="width: 50px; height: 50px;">
-                                    {{ comment.user.username|first|upper }}
+                                <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center text-white border border-2 border-white"
+                                    style="width: 40px; height: 40px;">
+                                    {{ post.author.username|make_list|first|upper }}
                                 </div>
                                 {% endif %}
+                                <span class="fw-bold text-white">{{ post.author.username }}</span>
                             </div>
-                            <div class="ms-3 w-100">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="fw-bold mb-0">{{ comment.user.username }}</h6>
-                                    <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
-                                </div>
-                                <p class="mb-1">{{ comment.content }}</p>
-                            </div>
+                            <span class="me-4"><i class="far fa-calendar-alt me-2"></i>{{ post.created_at|date:"F d, Y"
+                                }}</span>
+                            <span><i class="fas fa-eye me-2"></i>{{ post.views_count }} views</span>
                         </div>
-                        {% empty %}
-                        <p class="text-muted text-center py-4">No comments yet. Be the first to share your thoughts!</p>
-                        {% endfor %}
                     </div>
                 </div>
-            </section>
+                {% endif %}
+
+                <div class="card-body p-5">
+                    <!-- Post Controls (Edit/Delete for Author/Admin) -->
+                    {% if user.is_staff and user == post.author or user.is_superuser %}
+                    <div class="mb-4 d-flex justify-content-end gap-2">
+                        <a href="{% url 'post_update' post.slug %}"
+                            class="btn btn-outline-warning btn-sm rounded-pill px-3 fw-bold"><i
+                                class="fas fa-edit me-1"></i>Edit</a>
+                        <a href="{% url 'post_delete' post.slug %}"
+                            class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"><i
+                                class="fas fa-trash me-1"></i>Delete</a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Content -->
+                    <div class="article-content fs-5 lh-lg mb-5 text-break">
+                        {{ post.content|safe }}
+                    </div>
+
+                    <!-- Tags -->
+                    {% if post.tags.all %}
+                    <div class="mb-5">
+                        {% for tag in post.tags.all %}
+                        <span class="badge bg-secondary border me-1 rounded-pill px-3 py-2 fw-normal">#{{ tag.name
+                            }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <hr class="my-5 opacity-25">
+
+                    <!-- Interaction Section -->
+                    <div class="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <form action="{% url 'post_interaction' post.slug %}" method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="interaction_type" value="like">
+                                <button type="submit"
+                                    class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 {% if user_interaction == 'like' %}active{% endif %}">
+                                    <i class="fas fa-thumbs-up"></i> <span>Like</span> <span
+                                        class="badge bg-primary text-white ms-1 rounded-pill">{{ likes_count }}</span>
+                                </button>
+                            </form>
+                            <form action="{% url 'post_interaction' post.slug %}" method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="interaction_type" value="dislike">
+                                <button type="submit"
+                                    class="btn btn-outline-danger rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 {% if user_interaction == 'dislike' %}active{% endif %}">
+                                    <i class="fas fa-thumbs-down"></i> <span>Dislike</span> <span
+                                        class="badge bg-danger text-white ms-1 rounded-pill">{{ dislikes_count }}</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Share -->
+                        <div class="dropdown">
+                            <button class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-sm dropdown-toggle"
+                                type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-share-alt me-2"></i>Share
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                <li><a class="dropdown-item" href="#"><i
+                                            class="fab fa-facebook me-2 text-primary"></i>Facebook</a></li>
+                                <li><a class="dropdown-item" href="#"><i
+                                            class="fab fa-twitter me-2 text-info"></i>Twitter</a></li>
+                                <li><a class="dropdown-item" href="#"><i
+                                            class="fab fa-linkedin me-2 text-primary"></i>LinkedIn</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-link me-2"></i>Copy Link</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Comments Card -->
+                    <div class="bg-light p-4 rounded-4 mb-4 dark-mode-adjust">
+                        <h4 class="fw-bold mb-4 gradient-text"><i class="fas fa-comments me-2"></i>Discussion ({{
+                            comments.count }})</h4>
+
+                        {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'add_comment' post.slug %}" class="mb-5 position-relative">
+                            {% csrf_token %}
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control rounded-4 border-0 shadow-sm"
+                                    placeholder="Leave a comment here" id="floatingTextarea2" name="content"
+                                    style="height: 100px"></textarea>
+                                <label for="floatingTextarea2" class="text-muted">Join the discussion...</label>
+                            </div>
+                            <button type="submit"
+                                class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm position-absolute bottom-0 end-0 m-3">Post
+                                Comment</button>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-primary border-0 mb-5 rounded-3 shadow-sm d-flex align-items-center">
+                            <i class="fas fa-info-circle me-3 fa-2x"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Join the conversation</h6>
+                                <p class="mb-0 small">Please <a href="{% url 'account_login' %}"
+                                        class="fw-bold text-decoration-underline">sign in</a> to leave a comment.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="comment-list">
+                            {% for comment in comments %}
+                            <div class="d-flex mb-4 animate-hover p-3 rounded-3 bg-white shadow-sm border comment-card">
+                                <div class="flex-shrink-0">
+                                    {% if comment.user.profile.profile_picture %}
+                                    <img src="{{ comment.user.profile.profile_picture.url }}"
+                                        class="rounded-circle object-fit-cover" width="50" height="50">
+                                    {% else %}
+                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold"
+                                        style="width: 50px; height: 50px;">
+                                        {{ comment.user.username|make_list|first|upper }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="fw-bold mb-0">{{ comment.user.username }}</h6>
+                                        <small class="text-muted" style="font-size: 0.75rem;">{{
+                                            comment.created_at|timesince }} ago</small>
+                                    </div>
+                                    <p class="mb-0 text-muted">{{ comment.content }}</p>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-5 opacity-50">
+                                <i class="far fa-comments fa-3x mb-3"></i>
+                                <p class="fw-bold">No comments yet. Be the first!</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Specific overrides for this page */
+    .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="dark"] .bg-light {
+        background-color: #1e293b !important;
+        /* Matches card bg in dark mode */
+    }
+
+    [data-theme="dark"] .comment-card {
+        background-color: #0f172a !important;
+        /* Darker than container */
+        border-color: #334155 !important;
+    }
+
+    [data-theme="dark"] .comment-card .text-muted {
+        color: #cbd5e1 !important;
+    }
+</style>
 {% endblock %}

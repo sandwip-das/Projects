@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Django Blog{% endblock %}</title>
+    <title>{% block title %}My Blog{% endblock %}</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,41 +26,79 @@
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-4 px-lg-5">
             <a class="navbar-brand animate-hover" href="{% url 'home' %}">
-                <i class="fas fa-blog me-2"></i>BlogPro
+                <i class="fas fa-blog me-2"></i>My Blog
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Categories Dropdown (Left side) -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link animate-hover" href="{% url 'home' %}">Home</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle animate-hover fw-bold" href="#" data-bs-toggle="dropdown">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu shadow border-0">
+                            {% if navbar_categories %}
+                            {% for cat in navbar_categories %}
+                            <li>
+                                <a class="dropdown-item d-flex justify-content-between align-items-center"
+                                    href="{% url 'category_posts' cat.slug %}">
+                                    {{ cat.name }}
+                                    {% if cat.children.exists %}
+                                    <i class="fas fa-chevron-right small text-muted"></i>
+                                    {% endif %}
+                                </a>
+                                {% if cat.children.exists %}
+                                <ul class="submenu dropdown-menu">
+                                    {% for child in cat.children.all %}
+                                    <li><a class="dropdown-item" href="{% url 'category_posts' child.slug %}">{{
+                                            child.name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                            {% else %}
+                            <li><span class="dropdown-item text-muted">No categories</span></li>
+                            {% endif %}
+                        </ul>
                     </li>
-                    {% if user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold text-success animate-hover" href="{% url 'create_post' %}"><i
-                                class="fas fa-plus-circle me-1"></i>New Post</a>
-                    </li>
-                    {% endif %}
                 </ul>
 
-                <form class="d-flex me-3" action="{% url 'search' %}" method="GET">
-                    <input class="form-control me-2" type="search" placeholder="Search..." aria-label="Search" name="q">
-                    <button class="btn btn-outline-primary" type="submit"><i class="fas fa-search"></i></button>
+                <!-- Search Bar (Centered) -->
+                <form class="d-flex mx-auto" action="{% url 'search' %}" method="GET"
+                    style="width: 40%; min-width: 300px;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-primary"><i
+                                class="fas fa-search"></i></span>
+                        <input class="form-control border-start-0 ps-0" type="search" placeholder="Search topics..."
+                            aria-label="Search" name="q">
+                        <button class="btn btn-outline-primary" type="submit">Search</button>
+                    </div>
                 </form>
 
-                <div class="d-flex align-items-center">
+                <!-- Right Side: New Post, Auth, Theme -->
+                <div class="d-flex align-items-center gap-3">
+                    {% if user.is_staff %}
+                    <a class="btn btn-sm btn-success rounded-pill fw-bold animate-hover shadow-sm"
+                        href="{% url 'create_post' %}">
+                        <i class="fas fa-plus me-1"></i>New Post
+                    </a>
+                    {% endif %}
+
                     <!-- Theme Toggle -->
-                    <button class="btn btn-link text-decoration-none me-3 theme-toggle animate-hover" id="themeToggle">
-                        <i class="fas fa-moon"></i>
+                    <button class="btn btn-link text-decoration-none theme-toggle animate-hover" id="themeToggle"
+                        title="Toggle Theme">
+                        <i class="fas fa-moon fa-lg"></i>
                     </button>
 
                     {% if user.is_authenticated %}
                     <div class="dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center animate-hover" href="#"
+                        <a class="nav-link dropdown-toggle d-flex align-items-center animate-hover p-0" href="#"
                             role="button" data-bs-toggle="dropdown">
-                            <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center overflow-hidden border border-2 border-primary"
-                                style="width: 35px; height: 35px;">
+                            <div class="rounded-circle bg-gradient ms-2 d-flex align-items-center justify-content-center overflow-hidden border border-2 border-primary shadow-sm"
+                                style="width: 40px; height: 40px;">
                                 {% if user.profile.profile_picture %}
                                 <img src="{{ user.profile.profile_picture.url }}" class="w-100 h-100"
                                     style="object-fit:cover;">
@@ -68,34 +106,40 @@
                                 <span class="text-white fw-bold">{{ user.username|make_list|first|upper }}</span>
                                 {% endif %}
                             </div>
-                            <span class="fw-semibold">{{ user.username }}</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                            {% if user.is_superuser %} <!-- Admin -->
-                            <li><a class="dropdown-item" href="/admin/"><i class="fas fa-cog me-2"></i>Admin Panel</a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2 rounded-3">
+                            <li>
+                                <h6 class="dropdown-header">Hello, {{ user.first_name|default:user.username }}!</h6>
                             </li>
+                            {% if user.is_superuser %} <!-- Admin -->
+                            <li><a class="dropdown-item rounded-2" href="/admin/"><i
+                                        class="fas fa-cog me-2 text-primary"></i>Admin Panel</a></li>
                             {% endif %}
                             {% if user.is_staff %}
-                            <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i
-                                        class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                            <li><a class="dropdown-item rounded-2" href="{% url 'dashboard' %}"><i
+                                        class="fas fa-tachometer-alt me-2 text-info"></i>Dashboard</a></li>
                             {% endif %}
-                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>My
-                                    Profile</a></li>
+                            <li><a class="dropdown-item rounded-2" href="{% url 'profile' %}"><i
+                                        class="fas fa-user me-2 text-success"></i>My Profile</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
                                 <form method="post" action="{% url 'account_logout' %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="dropdown-item text-danger"><i
+                                    <button type="submit" class="dropdown-item rounded-2 text-danger fw-bold"><i
                                             class="fas fa-sign-out-alt me-2"></i>Logout</button>
                                 </form>
                             </li>
                         </ul>
                     </div>
                     {% else %}
-                    <a href="{% url 'account_login' %}" class="btn btn-outline-primary me-2 rounded-pill px-4">Login</a>
-                    <a href="{% url 'account_signup' %}" class="btn btn-primary rounded-pill px-4 shadow-sm">Sign Up</a>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'account_login' %}"
+                            class="btn btn-outline-primary rounded-pill px-3 fw-bold btn-sm">Sign In</a>
+                        <a href="{% url 'account_signup' %}"
+                            class="btn btn-primary rounded-pill px-3 fw-bold shadow-sm btn-sm">Registration</a>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -106,8 +150,9 @@
     {% if messages %}
     <div class="container-fluid px-4 px-lg-5 mt-3">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
-            {{ message }}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 animate-load"
+            role="alert">
+            <i class="fas fa-info-circle me-2"></i>{{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% endfor %}
@@ -122,7 +167,7 @@
     <!-- Offcanvas About Us -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasAbout" aria-labelledby="offcanvasAboutLabel">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title fw-bold text-gradient" id="offcanvasAboutLabel">About BlogPro</h5>
+            <h5 class="offcanvas-title fw-bold text-gradient" id="offcanvasAboutLabel">About My Blog</h5>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
@@ -130,7 +175,7 @@
                 <i class="fas fa-blog fa-3x text-primary mb-3"></i>
                 <p class="lead">Industry Leading Content</p>
             </div>
-            <p>Welcome to BlogPro, where professionalism meets creativity. We provide high-quality insights for the
+            <p>Welcome to My Blog, where professionalism meets creativity. We provide high-quality insights for the
                 modern industry.</p>
             <p>Our mission is to empower professionals with the latest trends and knowledge.</p>
         </div>
@@ -180,7 +225,8 @@
         <div class="container-fluid px-4 px-lg-5">
             <div class="row align-items-center">
                 <div class="col-md-4 mb-3 mb-md-0 text-md-start">
-                    <h5 class="fw-bold mb-1">BlogPro</h5>
+                    <h5 class="fw-bold mb-1"><a href="{% url 'home' %}" class="text-decoration-none text-reset">My
+                            Blog</a></h5>
                     <p class="small text-muted mb-0">Designed for Industry Professionals.</p>
                 </div>
                 <div class="col-md-4 mb-3 mb-md-0">
@@ -201,7 +247,7 @@
                                 data-bs-target="#contactModal">Contact</button></li>
                         <li class="list-inline-item"><a href="#" class="text-decoration-none text-muted me-3">Terms &
                                 Conditions</a></li>
-                        <li class="list-inline-item"><span class="text-muted">&copy; 2026 BlogPro</span></li>
+                        <li class="list-inline-item"><span class="text-muted">&copy; 2026 My Blog</span></li>
                     </ul>
                 </div>
             </div>

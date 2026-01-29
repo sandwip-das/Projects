@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load allauth account %}
+{% load socialaccount %}
 
 {% block content %}
 <div class="auth-container">
@@ -47,8 +48,8 @@
                 <!-- <a href="{% url 'account_reset_password' %}" class="small text-decoration-none">Forgot Password?</a> -->
             </div>
 
-            <button class="primaryAction btn btn-primary w-100 py-2 rounded-pill fw-bold mb-3" type="submit">{% trans
-                "Sign In" %}</button>
+            <button class="primaryAction btn btn-primary w-100 py-2 rounded-pill fw-bold mb-3" type="submit">Sign
+                In</button>
 
             <div class="text-center mb-3">
                 <span class="text-muted small">Or continue with</span>
@@ -56,11 +57,6 @@
             {% if socialaccount_providers %}
             <div class="d-grid gap-2">
                 {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-            </div>
-            {% else %}
-            <div class="text-center">
-                <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger w-100 rounded-pill"><i
-                        class="fab fa-google me-2"></i>Google</a>
             </div>
             {% endif %}
 

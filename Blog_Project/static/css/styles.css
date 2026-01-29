@@ -8,15 +8,12 @@
     --border-light: #e2e8f0;
 
     --background-dark: #0f172a;
-    --text-dark: #e2e8f0;
-    /* Off-white for better readability */
-    --text-muted-dark: #cbd5e1;
+    --text-dark: #ffffff;
+    /* Pure white for max visibility in dark mode */
+    --text-muted-dark: #e2e8f0;
+    /* Lighter gray for muted text */
     --card-bg-dark: #1e293b;
     --border-dark: #334155;
-
-    --glass-bg: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 
     --transition-speed: 0.3s;
     --font-heading: 'Outfit', sans-serif;
@@ -61,15 +58,33 @@ h5,
 h6 {
     font-family: var(--font-heading);
     font-weight: 700;
+    color: var(--text);
+    /* Ensure headers use the visible text color */
+}
+
+/* Fade In Animation on Load */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-load {
+    animation: fadeIn 0.8s ease-out forwards;
 }
 
 .animate-hover {
-    transition: transform 0.3s ease, color 0.3s ease;
+    transition: transform 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .animate-hover:hover {
-    transform: translateY(-2px);
-    color: var(--primary-color);
+    transform: translateY(-3px);
 }
 
 /* Navbar */
@@ -77,10 +92,8 @@ h6 {
     background: var(--nav-bg);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
-    transition: all var(--transition-speed);
     padding: 0.8rem 0;
-    margin-bottom: 0 !important;
-    /* Remove gap */
+    animation: fadeIn 0.6s ease-out;
 }
 
 .navbar-brand {
@@ -109,25 +122,40 @@ h6 {
     transform: translateY(-1px);
 }
 
+/* Sidebars Width Constraint */
+.sidebar-col {
+    max-width: 250px;
+    /* adjusted slightly for breathing room, user asked 200px but bootstrap cols might break. Will use flex styles in HTML */
+    flex: 0 0 250px;
+}
+
+@media (max-width: 992px) {
+    .sidebar-col {
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+}
+
 /* Hero Section */
 .hero-section {
     position: relative;
     width: 100%;
-    /* Fixed 150px height as requested */
     height: 150px;
+    /* Increased slightly to fit background better, transparent cards */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 !important;
     margin-bottom: 2rem;
+    background-image: url('https://picsum.photos/1500/300');
+    /* Auto generated background */
+    padding: 0;
 }
 
 .hero-overlay {
-    background: rgba(0, 0, 0, 0.3);
-    /* Slight overlay just for text pop if needed, else transparent */
+    background: rgba(0, 0, 0, 0.4);
     position: absolute;
     top: 0;
     left: 0;
@@ -141,23 +169,23 @@ h6 {
     border: none !important;
     box-shadow: none !important;
     color: white;
-    /* Text must pop against the image */
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 /* Content Cards */
 .card {
     background-color: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    /* Animated style */
+    animation: fadeIn 1s ease-out;
+    /* Load animation */
 }
 
 .card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     border-color: var(--primary-color);
 }
 
@@ -169,14 +197,27 @@ h6 {
     color: var(--muted);
 }
 
+/* Text Muted Override */
+.text-muted {
+    color: var(--muted) !important;
+}
+
+[data-theme="dark"] .article-content {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .article-content * {
+    color: #ffffff !important;
+}
+
 /* Footer */
 .footer {
     background-color: var(--card-bg);
     border-top: 1px solid var(--border);
     padding: 2rem 0;
-    /* Reduced padding */
     margin-top: auto;
     width: 100%;
+    animation: fadeIn 1.2s ease-out;
 }
 
 .social-icon {
@@ -236,8 +277,14 @@ h6 {
     color: #10b981;
 }
 
+[data-theme="dark"] .form-control {
+    background-color: #0f172a;
+    border-color: #334155;
+    color: white;
+}
+
 [data-theme="dark"] .form-control::placeholder {
-    color: #94a3b8;
+    color: #cbd5e1;
 }
 
 /* Utils */
@@ -252,9 +299,6 @@ h6 {
 .marquee-container {
     overflow: hidden;
     white-space: nowrap;
-    padding: 10px 0;
-    /* No background */
-    margin-bottom: 0;
 }
 
 .marquee-content {
@@ -264,7 +308,7 @@ h6 {
     color: white;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    font-size: 1.2rem;
+    font-size: 1.5rem;
 }
 
 @keyframes marquee {
@@ -293,4 +337,21 @@ h6 {
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Small Card Icons */
+.icon-stat {
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.icon-stat i {
+    margin-right: 3px;
+}
+
+[data-theme="dark"] .bg-light-subtle {
+    background-color: var(--card-bg-dark) !important;
+    border-color: var(--border-dark) !important;
 }

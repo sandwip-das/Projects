@@ -36,4 +36,65 @@
         </div>
     </div>
 </div>
+
+<!-- CKEditor Integration -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+<style>
+    .ck-editor__editable {
+        min-height: 300px;
+        color: var(--text) !important;
+        background-color: var(--card-bg) !important;
+    }
+
+    /* Dark Mode Overrides for CKEditor */
+    [data-theme="dark"] .ck-toolbar {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+    }
+
+    [data-theme="dark"] .ck-content {
+        background-color: #0f172a !important;
+        color: #ffffff !important;
+    }
+
+    [data-theme="dark"] .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
+        border-color: #334155 !important;
+    }
+
+    [data-theme="dark"] .ck.ck-button,
+    [data-theme="dark"] .ck.ck-dropdown__button,
+    [data-theme="dark"] .ck.ck-dialog,
+    [data-theme="dark"] .ck.ck-input-text {
+        color: #e2e8f0 !important;
+        background: #1e293b !important;
+    }
+
+    [data-theme="dark"] .ck-powered-by {
+        display: none !important;
+    }
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const contentField = document.querySelector('#post-content');
+        if (contentField) {
+            ClassicEditor
+                .create(contentField, {
+                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo'],
+                    heading: {
+                        options: [
+                            { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                            { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                            { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                        ]
+                    }
+                })
+                .then(editor => {
+                    console.log('Editor was initialized', editor);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+    });
+</script>
 {% endblock %}
