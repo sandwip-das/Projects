@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Profile, Post, Comment
+from .models import Profile, Post, Comment, Tag
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
@@ -28,17 +28,38 @@ class ProfileForm(forms.ModelForm):
         }
 
 class PostForm(forms.ModelForm):
+    tag_str = forms.CharField(
+        required=False, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter tags separated by commas (e.g. Technology, Python, Web)'}),
+        label="Tags"
+    )
+    
     class Meta:
         model = Post
-        fields = ['title', 'content', 'featured_image', 'category', 'tags', 'status']
+        fields = ['title', 'content', 'featured_image', 'category', 'status'] # Status kept for hidden input
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'content': forms.Textarea(attrs={'class': 'form-control', 'id': 'post-content'}), # ID for JS editor
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter post title...'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'id': 'post-content', 'placeholder': 'Write your post content here...'}),
             'featured_image': forms.FileInput(attrs={'class': 'form-control'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
-            'tags': forms.SelectMultiple(attrs={'class': 'form-select'}),
-            'status': forms.Select(attrs={'class': 'form-select'}),
+            'status': forms.HiddenInput(), # Hidden, controlled by buttons
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['tag_str'].initial = ", ".join([t.name for t in self.instance.tags.all()])
+
+    def save(self, commit=True):
+        post = super().save(commit=False)
+        if commit:
+            post.save()
+            post.tags.clear()
+            tag_names = [t.strip() for t in self.cleaned_data['tag_str'].split(',') if t.strip()]
+            for tag_name in tag_names:
+                tag, created = Tag.objects.get_or_create(name=tag_name)
+                post.tags.add(tag)
+        return post
 
 class CommentForm(forms.ModelForm):
     parent_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)

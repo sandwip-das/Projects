@@ -3,32 +3,46 @@
 {% block content %}
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-9">
             <div class="card border-0 shadow-lg">
                 <div class="card-body p-5">
                     <h2 class="mb-4 text-gradient fw-bold">{% if object %}Edit Post{% else %}Create New Post{% endif %}
                     </h2>
-                    <form method="POST" enctype="multipart/form-data">
+
+                    <form method="POST" enctype="multipart/form-data" id="postForm">
                         {% csrf_token %}
-                        <!-- Manual Rendering for styling -->
+
+                        <!-- Form Fields -->
                         {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        <div class="mb-4">
+                            {% if not field.is_hidden %}
+                            <label class="form-label fw-bold mb-2">{{ field.label }}</label>
                             {% endif %}
+
+                            {{ field }}
+
+                            {% if field.help_text %}
+                            <small class="form-text text-muted d-block mt-1">{{ field.help_text }}</small>
+                            {% endif %}
+
                             {% for error in field.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                            <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ error
+                                }}</div>
                             {% endfor %}
                         </div>
                         {% endfor %}
 
-                        <div class="d-grid gap-2 mt-4">
-                            <button class="btn btn-primary rounded-pill py-2 fw-bold" type="submit">
-                                {% if object %}Update Post{% else %}Publish Post{% endif %}
+                        <div class="d-flex gap-3 mt-5 pt-3 border-top">
+                            <button class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm flex-grow-1"
+                                type="button" onclick="submitForm('published')">
+                                <i class="fas fa-paper-plane me-2"></i>Publish Post
                             </button>
-                            <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill py-2">Cancel</a>
+                            <button class="btn btn-secondary rounded-pill px-4 py-2 fw-bold shadow-sm" type="button"
+                                onclick="submitForm('draft')">
+                                <i class="fas fa-save me-2"></i>Save Draft
+                            </button>
+                            <a href="{% url 'home' %}"
+                                class="btn btn-outline-danger rounded-pill px-4 py-2 fw-bold">Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -37,64 +51,97 @@
     </div>
 </div>
 
-<!-- CKEditor Integration -->
-<script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+<!-- TinyMCE Integration (Stable, Full Features) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+
 <style>
-    .ck-editor__editable {
-        min-height: 300px;
-        color: var(--text) !important;
-        background-color: var(--card-bg) !important;
+    /* TinyMCE Customization for clean look */
+    .tox-tinymce {
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        /* Remove default shadow */
+        box-shadow: none !important;
     }
 
-    /* Dark Mode Overrides for CKEditor */
-    [data-theme="dark"] .ck-toolbar {
-        background-color: #1e293b !important;
-        border-color: #334155 !important;
-    }
-
-    [data-theme="dark"] .ck-content {
-        background-color: #0f172a !important;
-        color: #ffffff !important;
-    }
-
-    [data-theme="dark"] .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
-        border-color: #334155 !important;
-    }
-
-    [data-theme="dark"] .ck.ck-button,
-    [data-theme="dark"] .ck.ck-dropdown__button,
-    [data-theme="dark"] .ck.ck-dialog,
-    [data-theme="dark"] .ck.ck-input-text {
-        color: #e2e8f0 !important;
-        background: #1e293b !important;
-    }
-
-    [data-theme="dark"] .ck-powered-by {
+    /* Remove 'Powered by Tiny' and other promotional elements */
+    .tox-statusbar__branding,
+    .tox-promotion {
         display: none !important;
     }
+
+    /* Optional: Ensure toolbars blend if background desired is fully seamless */
+    /* .tox-toolbar__primary { background: transparent !important; } */
 </style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const contentField = document.querySelector('#post-content');
-        if (contentField) {
-            ClassicEditor
-                .create(contentField, {
-                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo'],
-                    heading: {
-                        options: [
-                            { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                            { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                            { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-                        ]
-                    }
-                })
-                .then(editor => {
-                    console.log('Editor was initialized', editor);
-                })
-                .catch(error => {
-                    console.error(error);
+        // Check strict theme from data-theme attribute or system preference
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+            (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        tinymce.init({
+            selector: '#post-content',
+            height: 500,
+            menubar: true,
+
+            // Branding Removals
+            branding: false,
+            promotion: false,
+
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons'
+            ],
+            toolbar: 'undo redo | formatselect | ' +
+                'fontfamily fontsize | bold italic underline strikethrough | ' +
+                'forecolor backcolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat | help',
+
+            // Strict Color Enforcement via content_style
+            content_style: `
+                body { 
+                    font-family: 'Inter', sans-serif; 
+                    font-size: 16px; 
+                    background-color: #ffffff; /* Force white background for black text readability */
+                    color: #000000 !important; /* Force black text as requested */
+                }
+                a { color: #4f46e5; }
+            `,
+
+            // Dark Mode Support
+            skin: isDark ? 'oxide-dark' : 'oxide',
+            content_css: isDark ? 'dark' : 'default',
+
+            setup: function (editor) {
+                editor.on('change', function () {
+                    editor.save(); // Sync content to textarea automatically
                 });
-        }
+            }
+        });
     });
+
+    function submitForm(status) {
+        // Update hidden status field
+        let statusField = document.querySelector('input[name="status"]');
+        if (!statusField) {
+            let input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'status';
+            input.id = 'id_status';
+            input.value = status;
+            document.getElementById('postForm').appendChild(input);
+        } else {
+            statusField.value = status;
+        }
+
+        // Trigger TinyMCE save to ensure textarea is populated
+        if (tinymce.get('post-content')) {
+            tinymce.get('post-content').save();
+        }
+
+        document.getElementById('postForm').submit();
+    }
 </script>
 {% endblock %}
