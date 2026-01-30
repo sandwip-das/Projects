@@ -274,7 +274,7 @@ h6 {
 .footer {
     background-color: var(--card-bg);
     border-top: 1px solid var(--border);
-    padding: 2rem 0;
+    padding: 0.5rem 0;
     margin-top: auto;
     width: 100%;
     animation: fadeIn 1.2s ease-out;
@@ -303,7 +303,7 @@ h6 {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 20px;
-    padding: 2.5rem;
+    padding: 1.5rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     max-width: 500px;
     width: 100%;
@@ -1106,7 +1106,7 @@ input[type="file"].profile-form-control {
 @media (min-width: 992px) {
 
     /* Show main dropdown on hover */
-    .navbar .dropdown:hover>.dropdown-menu {
+    .navbar .hover-dropdown:hover>.dropdown-menu {
         display: block;
         margin-top: 0;
         animation: fadeIn 0.2s ease-out;
@@ -1137,4 +1137,29 @@ input[type="file"].profile-form-control {
 
 .dropdown-item:hover i.fas.fa-chevron-right {
     transform: translateX(3px);
+}
+
+.text-gradient-orange {
+    background: linear-gradient(135deg, #FF5722, #D84315);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Category Dropdown Item Hover */
+.hover-dropdown .dropdown-item:hover {
+    color: #FF1493 !important;
+    background-color: rgba(255, 20, 147, 0.05) !important;
+}/* Dark Mode Modal Support */
+[data-theme='dark'] .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text);
+}
+
+[data-theme='dark'] .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+[data-theme='dark'] .modal-title {
+    color: var(--text);
 }

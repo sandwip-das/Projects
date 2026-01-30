@@ -20,4 +20,5 @@ urlpatterns = [
     path('comment/<int:pk>/edit/', views.comment_edit, name='comment_edit'),
     path('comment/<int:pk>/delete/', views.comment_delete, name='comment_delete'),
     path('post/<slug:slug>/', views.post_detail, name='post_detail'),
+    path('ajax/password-reset/', views.ajax_password_reset, name='ajax_password_reset'),
 ]

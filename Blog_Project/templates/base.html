@@ -34,7 +34,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <!-- Categories Dropdown (Left side) -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-5">
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown hover-dropdown">
                         <a class="nav-link dropdown-toggle animate-hover fw-bold" href="#" data-bs-toggle="dropdown">
                             Categories
                         </a>
@@ -79,7 +79,7 @@
 
                 <!-- Right Side: New Post, Auth, Theme -->
                 <div class="d-flex align-items-center gap-3">
-                    {% if user.is_staff %}
+                    {% if perms.blog.add_post %}
                     <a class="btn btn-sm btn-success rounded-pill fw-bold animate-hover shadow-sm"
                         href="{% url 'create_post' %}">
                         <i class="fas fa-plus me-1"></i>New Post
@@ -94,8 +94,8 @@
 
                     {% if user.is_authenticated %}
                     <div class="dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center animate-hover p-0" href="#"
-                            role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center p-0" href="#" role="button"
+                            data-bs-toggle="dropdown">
                             <div class="rounded-circle bg-gradient ms-2 d-flex align-items-center justify-content-center overflow-hidden border border-2 border-primary shadow-sm"
                                 style="width: 40px; height: 40px;">
                                 {% if user.profile.profile_picture %}
@@ -114,7 +114,7 @@
                             <li><a class="dropdown-item rounded-2" href="/admin/"><i
                                         class="fas fa-cog me-2 text-primary"></i>Admin Panel</a></li>
                             {% endif %}
-                            {% if user.is_staff %}
+                            {% if perms.blog.add_post %}
                             <li><a class="dropdown-item rounded-2" href="{% url 'dashboard' %}"><i
                                         class="fas fa-tachometer-alt me-2 text-info"></i>Dashboard</a></li>
                             {% endif %}
@@ -258,7 +258,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer mt-auto py-4" style="background-color: var(--card-bg);">
+    <footer class="footer mt-auto py-2" style="background-color: var(--card-bg);">
         <div class="container-fluid px-4 px-lg-5">
             <div class="row align-items-center mb-3">
                 <!-- Left: Navbar-style Brand -->

@@ -41,7 +41,8 @@
         <!-- Left Column: Trending (20% width on large screens) -->
         <div class="col-lg-2 d-none d-lg-block border-end bg-light-subtle">
             <div class="p-2 sticky-top" style="top: 80px; z-index: 1;">
-                <h5 class="mb-4 text-gradient border-bottom pb-2 fw-bold"><i class="fas fa-chart-line me-2"></i>Trending
+                <h5 class="mb-4 text-gradient-orange border-bottom pb-2 fw-bold"><i
+                        class="fas fa-chart-line me-2"></i>Trending Post
                 </h5>
                 {% for post in most_read|slice:":4" %}
                 <div class="card mb-4 trending-card shadow-sm animate-hover" style="background-color: var(--card-bg);">
@@ -105,7 +106,7 @@
 
         <!-- Center Column: Latest Stories (60% width on large screens) -->
         <div class="col-lg-8 px-4 py-2">
-            <h5 class="mb-4 text-gradient border-bottom pb-2 fw-bold"><i class="fas fa-newspaper me-2"></i>Latest
+            <h5 class="mb-4 text-gradient-orange border-bottom pb-2 fw-bold"><i class="fas fa-newspaper me-2"></i>Latest
                 Stories</h5>
 
             {% if featured_latest %}
@@ -254,7 +255,8 @@
         <!-- Right Column: Resources (20% width on large screens) -->
         <div class="col-lg-2 border-start bg-light-subtle">
             <div class="p-4 sticky-top" style="top: 80px; z-index: 1;">
-                <h5 class="mb-4 text-gradient border-bottom pb-2 fw-bold"><i class="fas fa-link me-2"></i>Resources</h5>
+                <h5 class="mb-4 text-gradient-orange border-bottom pb-2 fw-bold"><i
+                        class="fas fa-link me-2"></i>Resources</h5>
                 <div class="list-group list-group-flush shadow-sm rounded-3 overflow-hidden mb-4">
                     {% for link in links %}
                     <a href="{{ link.url }}"

@@ -10,6 +10,11 @@ from django.conf import settings
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
+
+# Helper for Role-Based Permissions
+def is_editor_check(user):
+    return user.is_authenticated and (user.is_superuser or user.groups.filter(name='Editor').exists())
+
 def home(request):
     try:
         home_content = HomeContent.objects.latest('id')
@@ -230,7 +235,7 @@ def add_comment(request, slug):
                     'comment': {
                         'id': comment.pk,
                         'user': comment.user.username,
-                        'profile_picture_url': comment.user.profile.profile_picture.url if comment.user.profile.profile_picture else None,
+                        'profile_picture_url': comment.user.profile.profile_picture.url if hasattr(comment.user, 'profile') and comment.user.profile.profile_picture else None,
                         'initial': comment.user.username[0].upper(),
                         'created_at': timesince(comment.created_at) + " ago",
                         'content': comment.content
@@ -243,7 +248,7 @@ def add_comment(request, slug):
 
 @login_required
 def dashboard(request):
-    if not request.user.is_staff:
+    if not is_editor_check(request.user):
         messages.error(request, "Access restricted to staff/editors.")
         return redirect('home')
         
@@ -288,7 +293,7 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
         
     def test_func(self):
-        return self.request.user.is_staff
+        return is_editor_check(self.request.user)
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
@@ -300,12 +305,9 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
     def test_func(self):
-        post = self.get_object()
-        if self.request.user.is_superuser:
-            return True
-        if self.request.user == post.author and self.request.user.is_staff:
-            return True
-        return False
+        # Editors can edit their own posts and strictly permissioned editors can edit others.
+        # Since 'Editor' group has change_post, this covers both.
+        return is_editor_check(self.request.user)
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
@@ -313,12 +315,7 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     template_name = 'blog/post_confirm_delete.html'
     
     def test_func(self):
-        post = self.get_object()
-        if self.request.user.is_superuser:
-            return True
-        if self.request.user == post.author and self.request.user.is_staff:
-            return True
-        return False
+        return is_editor_check(self.request.user)
 
 @login_required
 def comment_edit(request, pk):
@@ -382,3 +379,46 @@ def comment_delete(request, pk):
         return redirect('post_detail', slug=post.slug)
     
     return render(request, 'blog/comment_confirm_delete.html', {'comment': comment})
+
+from django.contrib.auth.forms import PasswordResetForm
+from django.views.decorators.http import require_POST
+import json
+from django.contrib.auth.models import User
+
+@require_POST
+def ajax_password_reset(request):
+    try:
+        data = json.loads(request.body)
+        action = data.get('action', 'verify')
+        username = data.get('username')
+        email = data.get('email')
+        
+        # Verify User Logic
+        user = None
+        if username and email:
+            try:
+                user_obj = User.objects.get(username=username)
+                if user_obj.email.lower() == email.lower():
+                    user = user_obj
+            except User.DoesNotExist:
+                pass
+        
+        if not user:
+             return JsonResponse({'error': 'Email and User ID do not match.'}, status=400)
+
+        if action == 'verify':
+            return JsonResponse({'valid': True})
+            
+        if action == 'reset':
+            new_password = data.get('new_password')
+            if not new_password:
+                return JsonResponse({'error': 'New password is required.'}, status=400)
+                
+            user.set_password(new_password)
+            user.save()
+            return JsonResponse({'message': 'Password has been reset successfully. Please login with your new password.'})
+            
+        return JsonResponse({'error': 'Invalid action.'}, status=400)
+        
+    except Exception as e:
+         return JsonResponse({'error': str(e)}, status=500)

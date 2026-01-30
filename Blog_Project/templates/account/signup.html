@@ -4,6 +4,22 @@
 {% load socialaccount %}
 
 {% block content %}
+<style>
+    .signup .form-control {
+        padding: 0.35rem 0.6rem !important;
+        font-size: 0.9rem;
+        min-height: 0;
+    }
+
+    .signup .mb-3 {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .signup .btn {
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+    }
+</style>
 <div class="auth-container">
     <div class="auth-card">
         <div class="text-center mb-4">
@@ -25,8 +41,29 @@
             {% endif %}
 
             <!-- Manual rendering to ensure style control and skip email if strictly not needed in view even if form has it, though normally we render form -->
+            <!-- Username First -->
             {% for field in form %}
-            {% if field.name != 'email' %}
+            {% if field.name == 'username' %}
+            <div class="mb-3">
+                <label class="form-label ms-1 small text-muted fw-bold">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            <!-- Email Second -->
+            {% for field in form %}
+            {% if field.name == 'email' %}
+            <div class="mb-3">
+                <label class="form-label ms-1 small text-muted fw-bold">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            <!-- Passwords/Others -->
+            {% for field in form %}
+            {% if field.name != 'username' and field.name != 'email' %}
             <div class="mb-3">
                 <label class="form-label ms-1 small text-muted fw-bold">{{ field.label }}</label>
                 {% if 'password' in field.name %}
