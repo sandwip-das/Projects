@@ -3,15 +3,16 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section"
-    style="{% if home_content.hero_background_image %}background-image: url('{{ home_content.hero_background_image.url }}');{% endif %}">
+<section class="hero-section" {% if home_content.hero_background_image and home_content.hero_background_image.name
+    !='site/default_hero.jpg' %}style="background-image: url('{{ home_content.hero_background_image.url }}');" {% endif
+    %}>
     <div class="hero-overlay p-0"></div>
     <div class="container-fluid px-2 px-lg-4 hero-content">
         <div class="row w-100 mx-0">
             <!-- Marquee -->
-            <div class="col-md-4 mb-3 mb-md-0">
+            <div class="col-md-4">
                 {% if home_content.marquee_text %}
-                <div class="hero-card-transparent p-3 text-center animate-load">
+                <div class="hero-card-transparent text-center animate-load">
                     <div class="marquee-container">
                         <div class="marquee-content">{{ home_content.marquee_text }}</div>
                     </div>
@@ -19,16 +20,15 @@
                 {% endif %}
             </div>
             <!-- Description -->
-            <div class="col-md-4 mb-3 mb-md-0">
-                <div class="hero-card-transparent p-3 text-center animate-load" style="animation-delay: 0.2s;">
-                    <h3 class="fw-bold mb-2">{{ home_content.short_description|default:"Welcome to Django Blog" }}</h3>
+            <div class="col-md-4">
+                <div class="hero-card-transparent text-center animate-load" style="animation-delay: 0.2s;">
+                    <h3 class="fw-bold mb-2">{{ home_content.short_description }}</h3>
                 </div>
             </div>
             <!-- Motto -->
             <div class="col-md-4">
-                <div class="hero-card-transparent p-3 text-center animate-load" style="animation-delay: 0.4s;">
-                    <p class="lead mb-0 text-white fw-bold">"{{ home_content.motto|default:"Insights for Professionals"
-                        }}"</p>
+                <div class="hero-card-transparent text-center animate-load" style="animation-delay: 0.4s;">
+                    <p class="lead mb-0 text-white fw-bold">{{ home_content.motto }}</p>
                 </div>
             </div>
         </div>

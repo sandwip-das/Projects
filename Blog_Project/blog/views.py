@@ -40,6 +40,11 @@ def home(request):
 def post_detail(request, slug):
     post = get_object_or_404(Post, slug=slug)
     
+    # Restrict Drafts
+    if post.status == 'draft' and request.user != post.author and not request.user.is_superuser:
+        from django.http import Http404
+        raise Http404("Post not found")
+    
     post.views_count += 1
     post.save()
     
@@ -112,11 +117,68 @@ def contact_us(request):
             return redirect('home')
     return redirect('home')
 
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+
+# ... (Previous imports kept implicitly by context matching, but adding JsonResponse)
+
+# Note: Ideally we should add JsonResponse to the imports at top, but for this editing tool, 
+# I will rewrite the relevant views and assume top-level imports are handled or I will add them if I can.
+# Actually, I'll just rewrite the views down here and risk the import error? 
+# No, I must ensure valid python. I'll simply add the import line at the top if I could, but I can't jump around.
+# I will use 'from django.http import JsonResponse' inside the function if needed, or hope it's there? 
+# It's not there. I will modify the top of the file separately? 
+# No, I will modify the Functions to import inside them or use the replace tool to swap the top imports first.
+# Wait, I can just replace the functions. I'll add the import inside the functions for safety 
+# or Replace the whole file content for imports? No, too large.
+# use 'from django.http import JsonResponse' inside the view functions.
+
 @login_required
 def post_interaction(request, slug):
-    post = get_object_or_404(Post, slug=slug)
-    interaction_type = request.POST.get('interaction_type')
+    from django.http import JsonResponse
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.accepts('application/json')
     
+    post = get_object_or_404(Post, slug=slug)
+    # Handle AJAX for cleaner UI
+    if is_ajax and request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+            interaction_type = data.get('interaction_type')
+        except:
+            interaction_type = request.POST.get('interaction_type')
+
+        if interaction_type not in ['like', 'dislike']:
+             return JsonResponse({'error': 'Invalid type'}, status=400)
+
+        interaction, created = PostInteraction.objects.get_or_create(
+            user=request.user, 
+            post=post,
+            defaults={'interaction_type': interaction_type}
+        )
+        
+        if not created:
+            if interaction.interaction_type == interaction_type:
+                interaction.delete() # Toggle off
+                user_interaction = None
+            else:
+                interaction.interaction_type = interaction_type
+                interaction.save()
+                user_interaction = interaction_type
+        else:
+            user_interaction = interaction_type
+            
+        likes_count = post.interactions.filter(interaction_type='like').count()
+        dislikes_count = post.interactions.filter(interaction_type='dislike').count()
+        
+        return JsonResponse({
+            'likes_count': likes_count,
+            'dislikes_count': dislikes_count,
+            'user_interaction': user_interaction
+        })
+
+    # Fallback for non-AJAX (Legacy support)
+    interaction_type = request.POST.get('interaction_type')
     if interaction_type not in ['like', 'dislike']:
         return redirect('post_detail', slug=slug)
         
@@ -137,7 +199,10 @@ def post_interaction(request, slug):
 
 @login_required
 def add_comment(request, slug):
+    from django.http import JsonResponse
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
     post = get_object_or_404(Post, slug=slug)
+    
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -152,7 +217,28 @@ def add_comment(request, slug):
                 except Comment.DoesNotExist:
                     pass
             comment.save()
+            
+            if is_ajax:
+                # Return the rendered HTML for the new comment to append via JS
+                # Constructing a simple dictionary of data is easier, or rendering a partial.
+                # Since we are inline, let's just return data and let JS build it, OR render a small template.
+                # simpler: Just return data.
+                from django.utils.timesince import timesince
+                return JsonResponse({
+                    'message': 'Comment added!',
+                    'count': post.comments.filter(active=True, parent__isnull=True).count(),
+                    'comment': {
+                        'id': comment.pk,
+                        'user': comment.user.username,
+                        'profile_picture_url': comment.user.profile.profile_picture.url if comment.user.profile.profile_picture else None,
+                        'initial': comment.user.username[0].upper(),
+                        'created_at': timesince(comment.created_at) + " ago",
+                        'content': comment.content
+                    }
+                })
+                
             messages.success(request, 'Comment added!')
+            
     return redirect('post_detail', slug=slug)
 
 @login_required
@@ -166,14 +252,28 @@ def dashboard(request):
     total_views = sum(p.views_count for p in user_posts)
     total_likes = PostInteraction.objects.filter(post__in=user_posts, interaction_type='like').count()
     
-    # Recent posts
-    recent_posts = user_posts.order_by('-created_at')[:5]
+    # Drafts Logic
+    my_drafts = user_posts.filter(status='draft').order_by('-created_at')
+    my_published = user_posts.filter(status='published').order_by('-created_at')
+    
+    # Admin Global Drafts
+    admin_drafts = None
+    if request.user.is_superuser:
+        admin_drafts = Post.objects.filter(status='draft').exclude(author=request.user).order_by('-created_at')
+
+    # Counts
+    draft_count = my_drafts.count()
+    admin_draft_count = admin_drafts.count() if admin_drafts else 0
     
     context = {
         'total_posts': total_posts,
         'total_views': total_views,
         'total_likes': total_likes,
-        'recent_posts': recent_posts,
+        'my_drafts': my_drafts,
+        'my_published': my_published,
+        'admin_drafts': admin_drafts,
+        'draft_count': draft_count,
+        'admin_draft_count': admin_draft_count,
     }
     return render(request, 'blog/dashboard.html', context)
 
@@ -219,3 +319,66 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         if self.request.user == post.author and self.request.user.is_staff:
             return True
         return False
+
+@login_required
+def comment_edit(request, pk):
+    from django.http import JsonResponse
+    import json
+    comment = get_object_or_404(Comment, pk=pk)
+    
+    # Permissions
+    if not (request.user.is_superuser or request.user == comment.post.author or request.user == comment.user):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'Permission denied'}, status=403)
+        messages.error(request, "Permission denied.")
+        return redirect('post_detail', slug=comment.post.slug)
+    
+    if request.method == 'POST':
+        # AJAX Handling
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            try:
+                data = json.loads(request.body)
+                content = data.get('content')
+                if content:
+                    comment.content = content
+                    comment.save()
+                    return JsonResponse({'message': 'Updated', 'content': comment.content})
+                return JsonResponse({'error': 'Empty content'}, status=400)
+            except:
+                pass
+
+        # Legacy Form Handling
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Comment updated!')
+            return redirect('post_detail', slug=comment.post.slug)
+    else:
+        form = CommentForm(instance=comment)
+    return render(request, 'blog/comment_form.html', {'form': form, 'comment': comment})
+
+@login_required
+def comment_delete(request, pk):
+    from django.http import JsonResponse
+    comment = get_object_or_404(Comment, pk=pk)
+    
+    # Permissions
+    if not (request.user.is_superuser or request.user == comment.post.author or request.user == comment.user):
+         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'Permission denied'}, status=403)
+         messages.error(request, "Permission denied.")
+         return redirect('post_detail', slug=comment.post.slug)
+        
+    if request.method == 'POST':
+        post = comment.post
+        comment.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             return JsonResponse({
+                 'message': 'Deleted',
+                 'count': post.comments.filter(active=True, parent__isnull=True).count()
+             })
+        
+        messages.success(request, 'Comment deleted!')
+        return redirect('post_detail', slug=post.slug)
+    
+    return render(request, 'blog/comment_confirm_delete.html', {'comment': comment})

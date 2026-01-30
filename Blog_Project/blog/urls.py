@@ -17,5 +17,7 @@ urlpatterns = [
     
     path('post/<slug:slug>/like/', views.post_interaction, name='post_interaction'),
     path('post/<slug:slug>/comment/', views.add_comment, name='add_comment'),
+    path('comment/<int:pk>/edit/', views.comment_edit, name='comment_edit'),
+    path('comment/<int:pk>/delete/', views.comment_delete, name='comment_delete'),
     path('post/<slug:slug>/', views.post_detail, name='post_detail'),
 ]

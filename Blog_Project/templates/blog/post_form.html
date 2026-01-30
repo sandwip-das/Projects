@@ -5,24 +5,24 @@
     <div class="row justify-content-center">
         <div class="col-md-9">
             <div class="card border-0 shadow-lg">
-                <div class="card-body p-5">
-                    <h2 class="mb-4 text-gradient fw-bold">{% if object %}Edit Post{% else %}Create New Post{% endif %}
+                <div class="card-body p-4">
+                    <h2 class="mb-3 text-gradient fw-bold">{% if object %}Edit Post{% else %}Create New Post{% endif %}
                     </h2>
 
                     <form method="POST" enctype="multipart/form-data" id="postForm">
                         {% csrf_token %}
 
-                        <!-- Form Fields -->
+                        <!-- Form Fields (Compact) -->
                         {% for field in form %}
-                        <div class="mb-4">
+                        <div class="mb-2">
                             {% if not field.is_hidden %}
-                            <label class="form-label fw-bold mb-2">{{ field.label }}</label>
+                            <label class="form-label fw-bold mb-1 small">{{ field.label }}</label>
                             {% endif %}
 
                             {{ field }}
 
                             {% if field.help_text %}
-                            <small class="form-text text-muted d-block mt-1">{{ field.help_text }}</small>
+                            <small class="form-text text-muted d-block mt-1 small">{{ field.help_text }}</small>
                             {% endif %}
 
                             {% for error in field.errors %}
@@ -32,17 +32,17 @@
                         </div>
                         {% endfor %}
 
-                        <div class="d-flex gap-3 mt-5 pt-3 border-top">
-                            <button class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm flex-grow-1"
+                        <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                            <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm flex-grow-1 btn-sm"
                                 type="button" onclick="submitForm('published')">
                                 <i class="fas fa-paper-plane me-2"></i>Publish Post
                             </button>
-                            <button class="btn btn-secondary rounded-pill px-4 py-2 fw-bold shadow-sm" type="button"
-                                onclick="submitForm('draft')">
+                            <button class="btn btn-secondary rounded-pill px-3 py-2 fw-bold shadow-sm btn-sm"
+                                type="button" onclick="submitForm('draft')">
                                 <i class="fas fa-save me-2"></i>Save Draft
                             </button>
                             <a href="{% url 'home' %}"
-                                class="btn btn-outline-danger rounded-pill px-4 py-2 fw-bold">Cancel</a>
+                                class="btn btn-outline-danger rounded-pill px-3 py-2 fw-bold btn-sm">Cancel</a>
                         </div>
                     </form>
                 </div>

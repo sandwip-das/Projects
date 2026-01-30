@@ -16,10 +16,11 @@ class UserUpdateForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['profile_picture', 'bio', 'mobile_number', 'educational_qualifications', 'profession', 'current_city', 'country']
+        fields = ['profile_picture', 'bio', 'mobile_number', 'educational_qualifications', 'interested_subjects', 'profession', 'current_city', 'country']
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
-            'educational_qualifications': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'educational_qualifications': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your latest earned degree'}),
+            'interested_subjects': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'eg, Physics, IT, etc..'}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
             'mobile_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mobile Number'}),
             'profession': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Profession'}),

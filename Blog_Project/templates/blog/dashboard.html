@@ -1,6 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container my-5">
+    <style>
+        /* Dashboard Tabs Styling */
+        .nav-pills .nav-link {
+            transition: all 0.3s ease;
+        }
+
+        /* Active State: Gradient Blue, White Text */
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #0d6efd, #0043ce) !important;
+            color: white !important;
+            box-shadow: 0 4px 6px rgba(13, 110, 253, 0.3);
+        }
+
+        /* Non-Active Hover: Solid Blue BG, White Text */
+        .nav-pills .nav-link:not(.active):hover {
+            background-color: var(--bs-primary) !important;
+            color: white !important;
+            transform: translateY(-1px);
+        }
+
+        /* Badge Styling in Active State */
+        .nav-pills .nav-link.active .badge {
+            background-color: rgba(255, 255, 255, 0.25) !important;
+            color: white !important;
+        }
+
+        /* Badge Styling on Hover (Non-Active) */
+        .nav-pills .nav-link:not(.active):hover .badge {
+            background-color: white !important;
+            color: var(--bs-primary) !important;
+        }
+    </style>
+
     <h2 class="mb-4 text-gradient fw-bold">Editor Dashboard</h2>
     <div class="row g-4 mb-5">
         <div class="col-md-4">
@@ -44,45 +77,151 @@
         </div>
     </div>
 
+    <!-- Dashboard Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold rounded-pill" id="published-tab" data-bs-toggle="pill"
+                data-bs-target="#published" type="button" role="tab">
+                <i class="fas fa-check-circle me-2"></i>My Published
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold rounded-pill" id="drafts-tab" data-bs-toggle="pill" data-bs-target="#drafts"
+                type="button" role="tab">
+                <i class="fas fa-pencil-ruler me-2"></i>My Drafts
+                <span class="badge bg-secondary ms-1 rounded-pill">{{ draft_count }}</span>
+            </button>
+        </li>
+        {% if admin_drafts %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold rounded-pill btn-outline-danger" id="all-drafts-tab" data-bs-toggle="pill"
+                data-bs-target="#all-drafts" type="button" role="tab">
+                <i class="fas fa-user-shield me-2"></i>Review Queue
+                <span class="badge bg-danger ms-1 rounded-pill">{{ admin_draft_count }}</span>
+            </button>
+        </li>
+        {% endif %}
+    </ul>
+
     <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
-            <h4 class="mb-4">Recent Posts</h4>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Title</th>
-                            <th>Published Date</th>
-                            <th>Views</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for post in recent_posts %}
-                        <tr>
-                            <td class="fw-bold">{{ post.title|truncatewords:5 }}</td>
-                            <td>{{ post.created_at|date:"M d, Y" }}</td>
-                            <td>{{ post.views_count }}</td>
-                            <td>
-                                <span
-                                    class="badge rounded-pill {% if post.status == 'published' %}bg-success{% else %}bg-secondary{% endif %}">
-                                    {{ post.status|title }}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="{{ post.get_absolute_url }}" class="btn btn-sm btn-outline-primary">View</a>
-                                <a href="/admin/blog/post/{{ post.id }}/change/"
-                                    class="btn btn-sm btn-outline-secondary">Edit</a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">No posts found. Start writing!</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="tab-content" id="dashboardTabsContent">
+
+                <!-- Published Tab -->
+                <div class="tab-pane fade show active" id="published" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Views</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in my_published %}
+                                <tr>
+                                    <td class="fw-bold">{{ post.title|truncatewords:5 }}</td>
+                                    <td>{{ post.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ post.views_count }}</td>
+                                    <td>
+                                        <a href="{{ post.get_absolute_url }}"
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-3">View</a>
+                                        <a href="{% url 'post_update' post.slug %}"
+                                            class="btn btn-sm btn-outline-secondary rounded-pill px-3">Edit</a>
+                                        <a href="{% url 'post_delete' post.slug %}"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No published posts yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- My Drafts Tab -->
+                <div class="tab-pane fade" id="drafts" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Last Updated</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in my_drafts %}
+                                <tr>
+                                    <td class="fw-bold">{{ post.title|truncatewords:5 }}</td>
+                                    <td>{{ post.updated_at|timesince }} ago</td>
+                                    <td><span class="badge bg-warning text-dark">Draft</span></td>
+                                    <td>
+                                        <a href="{% url 'post_update' post.slug %}"
+                                            class="btn btn-sm btn-primary rounded-pill px-3">Edit/Publish</a>
+                                        <a href="{% url 'post_delete' post.slug %}"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No active drafts.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Queue Tab -->
+                {% if admin_drafts %}
+                <div class="tab-pane fade" id="all-drafts" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in admin_drafts %}
+                                <tr>
+                                    <td class="fw-bold">{{ post.title|truncatewords:5 }}</td>
+                                    <td>
+                                        <span class="badge bg-info text-dark rounded-pill">
+                                            {{ post.author.username }}
+                                        </span>
+                                    </td>
+                                    <td>{{ post.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{{ post.get_absolute_url }}"
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-3">Preview</a>
+                                        <a href="{% url 'post_update' post.slug %}"
+                                            class="btn btn-sm btn-success rounded-pill px-3">Review</a>
+                                        <a href="{% url 'post_delete' post.slug %}"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Queue is clear.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
             </div>
         </div>
     </div>
