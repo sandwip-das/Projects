@@ -61,6 +61,8 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     views_count = models.PositiveIntegerField(default=0)
+    last_edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='edited_posts')
+    last_edited_at = models.DateTimeField(null=True, blank=True)
     
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -123,6 +125,14 @@ class HomeContent(models.Model):
     short_description = models.TextField(help_text="Blog short description for Hero section")
     motto = models.CharField(max_length=255, help_text="Blog Motto")
     hero_background_image = models.ImageField(upload_to='site/', default='site/default_hero.jpg')
+    # Column 1 Content
+    hero_column_one_image = models.ImageField(upload_to='site/', blank=True, null=True, help_text="Optional image for the first column")
+    hero_column_one_text = models.TextField(blank=True, null=True, help_text="Optional text for the first column")
+    # Column 2 Content
+    hero_column_two_heading = models.CharField(max_length=255, blank=True, null=True, help_text="Main heading for the middle column")
+    hero_column_two_motto = models.TextField(blank=True, null=True, help_text="Sub-motto for the middle column")
+    # Column 3 Content (kept for legacy or specific use, but user said it will be blank)
+    hero_column_three_content = models.TextField(blank=True, null=True, help_text="Content for the third column (optional)")
 
     def __str__(self):
         return "Homepage Content"
@@ -137,3 +147,11 @@ class ImportantLink(models.Model):
         
     def __str__(self):
         return self.title
+
+class PostEditHistory(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='edit_history')
+    editor = models.ForeignKey(User, on_delete=models.CASCADE)
+    edited_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Edit by {self.editor.username} on {self.post.title} at {self.edited_at}"

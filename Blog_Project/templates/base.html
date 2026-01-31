@@ -41,23 +41,7 @@
                         <ul class="dropdown-menu shadow border-0">
                             {% if navbar_categories %}
                             {% for cat in navbar_categories %}
-                            <li>
-                                <a class="dropdown-item d-flex justify-content-between align-items-center"
-                                    href="{% url 'category_posts' cat.slug %}">
-                                    {{ cat.name }}
-                                    {% if cat.children.exists %}
-                                    <i class="fas fa-chevron-right small text-muted"></i>
-                                    {% endif %}
-                                </a>
-                                {% if cat.children.exists %}
-                                <ul class="submenu dropdown-menu">
-                                    {% for child in cat.children.all %}
-                                    <li><a class="dropdown-item" href="{% url 'category_posts' child.slug %}">{{
-                                            child.name }}</a></li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                            </li>
+                            {% include "includes/category_recursion.html" with category=cat %}
                             {% endfor %}
                             {% else %}
                             <li><span class="dropdown-item text-muted">No categories</span></li>
@@ -145,17 +129,38 @@
         </div>
     </nav>
 
-    <!-- Messages -->
+    <!-- Messages (Toast Style) -->
     {% if messages %}
-    <div class="container-fluid px-4 px-lg-5 mt-3">
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="top: 80px !important; z-index: 1060;">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 animate-load"
-            role="alert">
-            <i class="fas fa-info-circle me-2"></i>{{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="toast align-items-center text-white bg-{{ message.tags|default:'primary' }} border-0 show shadow-lg animate-load mb-2"
+            role="alert" aria-live="assertive" aria-atomic="true" data-autohide="false"
+            style="width: auto; min-width: 250px;">
+            <div class="d-flex">
+                <div class="toast-body fw-bold d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2"></i> {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
         </div>
         {% endfor %}
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var toasts = document.querySelectorAll('.toast');
+            toasts.forEach(function (toast) {
+                setTimeout(function () {
+                    var bsToast = new bootstrap.Toast(toast);
+                    bsToast.hide();
+                    // Optional: remove from DOM after hide transition
+                    toast.addEventListener('hidden.bs.toast', function () {
+                        toast.remove();
+                    });
+                }, 5000);
+            });
+        });
+    </script>
     {% endif %}
 
     <!-- Content Wrapper for Sticky Footer -->

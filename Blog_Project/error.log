@@ -3112,3 +3112,85 @@ Internal Server Error: /ajax/password-reset/
 "POST /ajax/password-reset/ HTTP/1.1" 500 131
 Internal Server Error: /ajax/password-reset/
 "POST /ajax/password-reset/ HTTP/1.1" 500 131
+Internal Server Error: /dashboard/
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\blog\views.py", line 281, in dashboard
+    'draft_count': draft_count,
+                   ^^^^^^^^^^^
+NameError: name 'draft_count' is not defined
+"GET /dashboard/ HTTP/1.1" 500 76714
+Internal Server Error: /dashboard/
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\blog\views.py", line 281, in dashboard
+    'draft_count': draft_count,
+                   ^^^^^^^^^^^
+NameError: name 'draft_count' is not defined
+"GET /dashboard/ HTTP/1.1" 500 76714
+Internal Server Error: /post/hypersonic-flight-breaking-the-speed-barrier/update/
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\contrib\auth\mixins.py", line 136, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\views\generic\base.py", line 145, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\views\generic\edit.py", line 206, in post
+    return super().post(request, *args, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\blog\views.py", line 356, in form_valid
+    form.instance.last_edited_at = timezone.now()
+                                   ^^^^^^^^
+NameError: name 'timezone' is not defined
+"POST /post/hypersonic-flight-breaking-the-speed-barrier/update/ HTTP/1.1" 500 101863
+Internal Server Error: /post/hypersonic-flight-breaking-the-speed-barrier/update/
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\contrib\auth\mixins.py", line 136, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\views\generic\base.py", line 145, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\views\generic\edit.py", line 206, in post
+    return super().post(request, *args, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\venv\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\HP\Desktop\Projects\Blog_Project\blog\views.py", line 356, in form_valid
+    form.instance.last_edited_at = timezone.now()
+                                   ^^^^^^^^
+NameError: name 'timezone' is not defined
+"POST /post/hypersonic-flight-breaking-the-speed-barrier/update/ HTTP/1.1" 500 101871

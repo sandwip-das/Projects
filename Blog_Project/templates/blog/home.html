@@ -7,28 +7,50 @@
     !='site/default_hero.jpg' %}style="background-image: url('{{ home_content.hero_background_image.url }}');" {% endif
     %}>
     <div class="hero-overlay p-0"></div>
-    <div class="container-fluid px-2 px-lg-4 hero-content">
-        <div class="row w-100 mx-0">
-            <!-- Marquee -->
-            <div class="col-md-4">
-                {% if home_content.marquee_text %}
+    <!-- Marquee Overlay (Top) -->
+    {% if home_content.marquee_text %}
+    <div class="position-absolute top-0 start-0 w-100 p-2" style="z-index: 10;">
+        <div class="marquee-container" style="background: transparent !important;">
+            <div class="marquee-content marquee-red-text">{{ home_content.marquee_text }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container-fluid px-2 px-lg-4 hero-content d-flex flex-column h-100 justify-content-center">
+        <div class="row w-100 mx-0 justify-content-center align-items-center">
+            <!-- Col 1 (Dynamic Content) -->
+            <div class="col-md-3">
                 <div class="hero-card-transparent text-center animate-load">
-                    <div class="marquee-container">
-                        <div class="marquee-content">{{ home_content.marquee_text }}</div>
-                    </div>
+                    {% if home_content.hero_column_one_image %}
+                    <img src="{{ home_content.hero_column_one_image.url }}" class="img-fluid rounded shadow-sm mb-2"
+                        style="max-height: 150px; width: auto;">
+                    {% endif %}
+                    {% if home_content.hero_column_one_text %}
+                    <p class="mb-0 text-white fw-medium text-shadow">{{ home_content.hero_column_one_text }}</p>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
-            <!-- Description -->
-            <div class="col-md-4">
+
+            <!-- Col 2 (Middle - Wider) -->
+            <div class="col-md-6">
                 <div class="hero-card-transparent text-center animate-load" style="animation-delay: 0.2s;">
-                    <h3 class="fw-bold mb-2">{{ home_content.short_description }}</h3>
+                    {% if home_content.hero_column_two_heading %}
+                    <h3 class="fw-bold mb-2 display-6 text-shadow text-white" style="color: #ffffff !important;">{{ home_content.hero_column_two_heading }}</h3>
+                    {% endif %}
+
+                    {% if home_content.hero_column_two_motto %}
+                    <p class="mb-0 text-white fw-light fs-3 text-shadow"
+                        style="font-family: 'Times New Roman', Times, serif; color: #ffffff !important;">{{ home_content.hero_column_two_motto }}</p>
+                    {% endif %}
                 </div>
             </div>
-            <!-- Motto -->
-            <div class="col-md-4">
+
+            <!-- Col 3 (Blank/Optional) -->
+            <div class="col-md-3">
                 <div class="hero-card-transparent text-center animate-load" style="animation-delay: 0.4s;">
-                    <p class="lead mb-0 text-white fw-bold">{{ home_content.motto }}</p>
+                    {% if home_content.hero_column_three_content %}
+                    <p class="mb-0 text-white text-shadow">{{ home_content.hero_column_three_content }}</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

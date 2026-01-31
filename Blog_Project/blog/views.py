@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.db.models import Q, Count
-from .models import Post, Category, Tag, Profile, Comment, PostInteraction, HomeContent, ImportantLink
+from django.db.models import Q, Count, Sum
+from django.contrib.auth.models import User
+from .models import Post, Category, Tag, Profile, Comment, PostInteraction, HomeContent, ImportantLink, PostEditHistory
 from .forms import ProfileForm, CommentForm, ContactForm, UserUpdateForm, PostForm
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -266,19 +268,67 @@ def dashboard(request):
     if request.user.is_superuser:
         admin_drafts = Post.objects.filter(status='draft').exclude(author=request.user).order_by('-created_at')
 
+    # All Published Posts (For new tab)
+    all_published_posts = Post.objects.filter(status='published').select_related('author').order_by('-created_at')
+
+    # All Posts for Editor Tab (Superuser)
+    # All Posts for Editor Tab (Superuser)
+    all_posts = None
+    admin_stats = []
+    editor_stats = []
+    
+    if request.user.is_superuser:
+        all_posts = Post.objects.filter(author__is_superuser=False).select_related('author').order_by('-created_at')
+        
+        # Calculate stats for all editors + superusers + staff
+        # Added is_active=True to ensure we don't show deactivated users
+        staff_users = User.objects.filter(Q(is_superuser=True) | Q(groups__name='Editor') | Q(is_staff=True), is_active=True).distinct().order_by('date_joined')
+        for staff in staff_users:
+            p_posts = Post.objects.filter(author=staff)
+            p_count = p_posts.count()
+            p_views = p_posts.aggregate(total=Sum('views_count'))['total'] or 0
+            p_likes = PostInteraction.objects.filter(post__in=p_posts, interaction_type='like').count()
+            p_comments = Comment.objects.filter(post__in=p_posts).count()
+            
+            stats_dict = {
+                'user': staff,
+                'total_posts': p_count,
+                'total_views': p_views,
+                'total_likes': p_likes,
+                'total_comments': p_comments
+            }
+            
+            if staff.is_superuser:
+                admin_stats.append(stats_dict)
+            else:
+                editor_stats.append(stats_dict)
+
+    # Calculate combined stats for the "All Staff" card
+    combined_stats = {
+        'total_posts': sum(d['total_posts'] for d in admin_stats + editor_stats),
+        'total_views': sum(d['total_views'] for d in admin_stats + editor_stats),
+        'total_likes': sum(d['total_likes'] for d in admin_stats + editor_stats),
+        'total_comments': sum(d['total_comments'] for d in admin_stats + editor_stats),
+    }
+
     # Counts
     draft_count = my_drafts.count()
     admin_draft_count = admin_drafts.count() if admin_drafts else 0
-    
+
     context = {
         'total_posts': total_posts,
         'total_views': total_views,
         'total_likes': total_likes,
         'my_drafts': my_drafts,
         'my_published': my_published,
+        'all_published_posts': all_published_posts,
         'admin_drafts': admin_drafts,
         'draft_count': draft_count,
         'admin_draft_count': admin_draft_count,
+        'all_posts': all_posts,
+        'combined_stats': combined_stats,
+        'admin_stats': admin_stats,
+        'editor_stats': editor_stats,
     }
     return render(request, 'blog/dashboard.html', context)
 
@@ -301,8 +351,18 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'blog/post_form.html'
     
     def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+        # Always update the last_edited fields to track the latest modification
+        from django.utils import timezone
+        form.instance.last_edited_by = self.request.user
+        form.instance.last_edited_at = timezone.now()
+        response = super().form_valid(form)
+        
+        # Save to history log
+        PostEditHistory.objects.create(
+            post=self.object,
+            editor=self.request.user
+        )
+        return response
 
     def test_func(self):
         # Editors can edit their own posts and strictly permissioned editors can edit others.

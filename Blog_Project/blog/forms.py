@@ -12,6 +12,13 @@ class UserUpdateForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
         }
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+                raise forms.ValidationError("This email is already in use by another account.")
+        return email
+
 
 class ProfileForm(forms.ModelForm):
     class Meta:
@@ -27,6 +34,14 @@ class ProfileForm(forms.ModelForm):
             'current_city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Current City'}),
             'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}),
         }
+
+    def clean_mobile_number(self):
+        mobile = self.cleaned_data.get('mobile_number')
+        if mobile:
+            # Check if any other profile has this mobile number
+            if Profile.objects.filter(mobile_number=mobile).exclude(pk=self.instance.pk).exists():
+                raise forms.ValidationError("This mobile number is already linked to another account.")
+        return mobile
 
 class PostForm(forms.ModelForm):
     tag_str = forms.CharField(

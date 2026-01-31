@@ -429,10 +429,10 @@ h6 {
     display: inline-block;
     padding-left: 100%;
     animation: marquee 20s linear infinite;
-    color: white;
+    color: #ff0000;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    font-size: 1.5rem;
+    font-size: 1.2rem;
 }
 
 @keyframes marquee {
@@ -1125,7 +1125,7 @@ input[type="file"].profile-form-control {
 
     /* Show submenu on hover of parent li */
     .dropdown-menu>li:hover>.submenu {
-        display: block;
+        display: block !important;
         animation: fadeIn 0.2s ease-out;
     }
 }
@@ -1150,7 +1150,9 @@ input[type="file"].profile-form-control {
 .hover-dropdown .dropdown-item:hover {
     color: #FF1493 !important;
     background-color: rgba(255, 20, 147, 0.05) !important;
-}/* Dark Mode Modal Support */
+}
+
+/* Dark Mode Modal Support */
 [data-theme='dark'] .modal-content {
     background-color: var(--card-bg);
     color: var(--text);
@@ -1162,4 +1164,58 @@ input[type="file"].profile-form-control {
 
 [data-theme='dark'] .modal-title {
     color: var(--text);
+}
+
+/* Global Dark Mode Enforcement for Pages, Dropdowns, and Layouts */
+[data-theme="dark"] body,
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-light,
+[data-theme="dark"] .card,
+[data-theme="dark"] .list-group-item,
+[data-theme="dark"] .comment-card,
+[data-theme="dark"] .offcanvas {
+    background-color: var(--background-dark) !important;
+    background: var(--background-dark) !important;
+    color: #ffffff !important;
+}
+
+/* Explicitly target all dropdown menus */
+[data-theme="dark"] .dropdown-menu,
+[data-theme="dark"] .dropdown-menu.show {
+    background-color: var(--card-bg-dark) !important;
+    border-color: var(--border-dark) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus,
+[data-theme="dark"] .dropdown-item.active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .offcanvas-title,
+[data-theme="dark"] .offcanvas-body,
+[data-theme="dark"] .offcanvas-body p,
+[data-theme="dark"] .offcanvas-body .lead {
+    color: #ffffff !important;
+}
+
+/* Ensure Headers and paragraphs inside these containers are white */
+[data-theme="dark"] .dropdown-menu h6,
+[data-theme="dark"] .dropdown-menu span,
+[data-theme="dark"] .comment-card p,
+[data-theme="dark"] .comment-card h6 {
+    color: #ffffff !important;
+}
+
+/* Marquee Red Text */
+.marquee-red-text {
+    color: #ff0000;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }

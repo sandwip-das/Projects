@@ -9,10 +9,18 @@ class PostAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
 
 class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'parent')
+    list_filter = ('parent',)
+    search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
 
 class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
+
+class HomeContentAdmin(admin.ModelAdmin):
+    # Hide deprecated fields
+    exclude = ('short_description', 'motto')
+    list_display = ('__str__', 'marquee_text')
 
 admin.site.register(Profile)
 admin.site.register(Category, CategoryAdmin)
@@ -20,5 +28,5 @@ admin.site.register(Tag, TagAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Comment)
 admin.site.register(PostInteraction)
-admin.site.register(HomeContent)
+admin.site.register(HomeContent, HomeContentAdmin)
 admin.site.register(ImportantLink)
