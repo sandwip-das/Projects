@@ -3,6 +3,26 @@ body {
         radial-gradient(at 0% 0%, rgba(20, 184, 166, 0.15) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.1) 0px, transparent 50%);
     background-attachment: fixed;
+    /* Prevent text selection */
+    -webkit-user-select: none;
+    /* Safari */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* IE10+/Edge */
+    user-select: none;
+    /* Standard */
+}
+
+/* Prevent image dragging */
+img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+    /* Disables right-click on images specifically */
 }
 
 /* Custom Scrollbar for Webkit Browsers */
