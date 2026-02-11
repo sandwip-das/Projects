@@ -1,0 +1,128 @@
+{% extends 'rosterApp/base.html' %}
+{% load roster_extras %}
+
+{% block content %}
+<div class="container mx-auto max-w-full">
+    <div class="bg-slate-800/50 rounded-xl shadow-2xl overflow-hidden border border-slate-700/50 backdrop-blur-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse">
+                <thead>
+                    <tr class="bg-slate-900 text-slate-400 border-b border-slate-700 sticky top-0 z-10 shadow-md">
+                        <!-- Jan-Jun -->
+                        <th class="p-2 border-r border-slate-700 w-16">JAN - {{ year }}</th>
+                        <th class="p-2 border-r border-slate-700 w-16">FEB</th>
+                        <th class="p-2 border-r border-slate-700 w-16">MAR</th>
+                        <th class="p-2 border-r border-slate-700 w-16">APR</th>
+                        <th class="p-2 border-r border-slate-700 w-16">MAY</th>
+                        <th class="p-2 border-r border-slate-700 w-16">JUN</th>
+
+                        <!-- Shifts -->
+                        <th class="p-2 bg-blue-900/30 text-blue-300 font-bold border-r border-blue-900/50 w-8">M</th>
+                        <th class="p-2 bg-orange-900/30 text-orange-300 font-bold border-r border-orange-900/50 w-8">E
+                        </th>
+                        <th class="p-2 bg-indigo-900/30 text-indigo-300 font-bold border-r border-indigo-900/50 w-8">N
+                        </th>
+                        <th class="p-2 bg-slate-800/50 text-slate-500 font-bold border-r border-slate-700 w-8">O</th>
+
+                        <!-- Jul-Dec -->
+                        <th class="p-2 border-r border-slate-700 w-16">JUL</th>
+                        <th class="p-2 border-r border-slate-700 w-16">AUG</th>
+                        <th class="p-2 border-r border-slate-700 w-16">SEP</th>
+                        <th class="p-2 border-r border-slate-700 w-16">OCT</th>
+                        <th class="p-2 border-r border-slate-700 w-16">NOV</th>
+                        <th class="p-2 w-16">DEC</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    {% for row in rows %}
+                    <tr class="hover:bg-slate-800/80 transition-colors group">
+                        <!-- Months 1-6 -->
+                        {% for _ in "123456"|make_list %}
+                        {% with m=forloop.counter %}
+                        {% with month_data=row.months|dict_item:m %}
+                        <td class="p-2 border-r border-slate-700/50 text-center relative
+                                {% if month_data.full_date == today %}
+                                    bg-primary/20 ring-1 ring-primary text-white font-bold
+                                {% else %}
+                                    text-slate-300
+                                {% endif %}
+                            ">
+                            {% if month_data %}
+                            {{ month_data.text }}
+                            {% endif %}
+                        </td>
+                        {% endwith %}
+                        {% endwith %}
+                        {% endfor %}
+
+                        <!-- Shift Columns -->
+                        <!-- Highlight logic: 
+                             If ANY date in this row is today, highlight the active shift if time matches?
+                             Or just highlight the row to indicate "This applies to X shift pattern".
+                        -->
+                        <td
+                            class="p-2 border-r border-blue-900/20 text-center font-bold text-blue-400 bg-blue-900/10 
+                            {% if row.is_active_duty and current_hour >= 6 and current_hour < 14 %} ring-2 ring-inset ring-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] {% endif %}">
+                            {{ row.M }}
+                        </td>
+                        <td
+                            class="p-2 border-r border-orange-900/20 text-center font-bold text-orange-400 bg-orange-900/10
+                            {% if row.is_active_duty and current_hour >= 14 and current_hour < 22 %} ring-2 ring-inset ring-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)] {% endif %}">
+                            {{ row.E }}
+                        </td>
+                        <td
+                            class="p-2 border-r border-indigo-900/20 text-center font-bold text-indigo-400 bg-indigo-900/10
+                            {% if row.is_active_duty and current_hour >= 22 or row.is_active_duty and current_hour < 6 %} ring-2 ring-inset ring-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] {% endif %}">
+                            {{ row.N }}
+                        </td>
+                        <td
+                            class="p-2 border-r border-slate-700/50 text-center font-bold text-slate-500 bg-slate-800/30">
+                            {{ row.O }}
+                        </td>
+
+                        <!-- Months 7-12 -->
+                        {% for m in "789012"|make_list %}
+                        <!-- Handle 10, 11, 12. "0" means 10, "1" means 11, "2" means 12 -->
+                        {% with m_fixed=forloop.counter|add:6 %}
+                        {% with month_data=row.months|dict_item:m_fixed %}
+                        <td class="p-2 border-r border-slate-700/50 text-center relative
+                                {% if month_data.full_date == today %}
+                                    bg-primary/20 ring-1 ring-primary text-white font-bold
+                                {% else %}
+                                    text-slate-300
+                                {% endif %}
+                            ">
+                            {% if month_data %}
+                            {{ month_data.text }}
+                            {% endif %}
+                        </td>
+                        {% endwith %}
+                        {% endwith %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4 text-center text-sm text-slate-400">
+        <div class="bg-blue-900/20 p-3 rounded border border-blue-900/50">
+            <span class="font-bold text-blue-400">Morning (M)</span>
+            <br>06:00 AM - 14:00 PM
+        </div>
+        <div class="bg-orange-900/20 p-3 rounded border border-orange-900/50">
+            <span class="font-bold text-orange-400">Evening (E)</span>
+            <br>14:00 PM - 22:00 PM
+        </div>
+        <div class="bg-indigo-900/20 p-3 rounded border border-indigo-900/50">
+            <span class="font-bold text-indigo-400">Night (N)</span>
+            <br>22:00 PM - 06:00 AM
+        </div>
+        <div class="bg-slate-800 p-3 rounded border border-slate-700">
+            <span class="font-bold text-slate-400">Off Day (O)</span>
+            <br>Rest
+        </div>
+    </div>
+</div>
+{% endblock %}

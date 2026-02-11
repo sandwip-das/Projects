@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Duty Roster">
+    <title>Duty Roster</title>
+    <link rel="icon" type="image/x-icon" href="favme.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        roboto: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary-teal': '#14b8a6',
+                        'primary-amber': '#f59e0b',
+                        'primary-purple': '#a855f7',
+                        'primary-gray': '#64748b',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'logo-bounce': 'titleBounce 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        titleBounce: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-3px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-[#020617] text-slate-200 min-h-screen flex flex-col font-sans overflow-y-scroll">
+
+    <!-- Navbar -->
+    <nav
+        class="font-roboto italic font-medium sticky top-0 z-50 w-full px-[60px] py-1 shadow-xl text-white border-b border-white/10 bg-[linear-gradient(to_right,#393a81_10%,#0ea5e9_30%,#10b981_90%)]">
+
+        <!-- Main Flex Container: Force Row (nowrap) to keep "online"/inline feel on mobile -->
+        <div
+            class="max-w-[1400px] mx-auto flex flex-nowrap items-center justify-between px-1 gap-2 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth">
+
+            <!-- Left: Logo + Title + Year -->
+            <div class="flex items-center gap-2 md:gap-4 shrink-0">
+                <!-- Logo -->
+                <div
+                    class="w-[clamp(2rem,5vw,3.1rem)] h-[clamp(2rem,5vw,3.1rem)] bg-white/15 rounded-xl grid place-items-center text-white border border-white/30 backdrop-blur-sm shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:rotate-12 hover:scale-110 transition-transform duration-300 shrink-0">
+                    <svg class="w-[60%] h-[60%]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                        <line x1="8" y1="14" x2="8" y2="18" />
+                        <line x1="12" y1="14" x2="12" y2="18" />
+                        <line x1="16" y1="14" x2="16" y2="18" />
+                    </svg>
+                </div>
+
+                <!-- Title -->
+                <h1
+                    class="font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent drop-shadow-md animate-logo-bounce text-[clamp(0.9rem,4vw,1.8rem)] whitespace-nowrap">
+                    Duty Roster
+                </h1>
+
+                <!-- Desktop Controls (Hidden on Mobile) -->
+                <div class="hidden md:flex items-center gap-4">
+                    <!-- Year Control -->
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button id="prev-year"
+                            class="text-white/70 hover:text-white hover:scale-110 transition-all p-1">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg>
+                        </button>
+                        <span id="current-year-display"
+                            class="font-mono font-bold text-white text-[clamp(0.7rem,2vw,1.1rem)]">2026</span>
+                        <button id="next-year"
+                            class="text-white/70 hover:text-white hover:scale-110 transition-all p-1">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M9 18l6-6-6-6" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="flex gap-2 shrink-0">
+                        <button id="tab-international"
+                            class="font-bold cursor-pointer transition-all duration-300 border border-transparent rounded-full px-[clamp(0.6rem,2vw,1.2rem)] py-[clamp(0.2rem,1vw,0.4rem)] text-[clamp(0.6rem,1.5vw,0.8rem)] flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.4)] scale-105 bg-white text-teal-700">International</button>
+                        <button id="tab-domestic"
+                            class="font-bold cursor-pointer transition-all duration-300 border border-transparent rounded-full px-[clamp(0.6rem,2vw,1.2rem)] py-[clamp(0.2rem,1vw,0.4rem)] text-[clamp(0.6rem,1.5vw,0.8rem)] flex items-center justify-center shadow-md bg-white/10 text-white/90 hover:bg-white/20 hover:text-white hover:border-white/30">Domestic</button>
+                    </div>
+
+                    <!-- Theme Toggle (Switch Style) -->
+                    <!-- Theme Toggle (Animated Icon) -->
+                    <button id="theme-toggle"
+                        class="ml-3 relative h-10 w-10 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-600 shadow-lg flex items-center justify-center transition-all duration-300 focus:outline-none"
+                        aria-label="Toggle Theme">
+                        <span class="sr-only">Toggle Theme</span>
+                        <!-- Sun Icon -->
+                        <svg id="icon-sun"
+                            class="w-6 h-6 text-amber-400 absolute transition-all duration-500 rotate-0 scale-100 opacity-100"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                            </path>
+                        </svg>
+                        <!-- Moon Icon -->
+                        <svg id="icon-moon"
+                            class="w-6 h-6 text-sky-400 absolute transition-all duration-500 rotate-90 scale-0 opacity-0"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-white p-2 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu Dropdown -->
+            <div id="mobile-menu"
+                class="hidden absolute top-full left-0 w-full bg-[#1e293b] border-b border-white/10 shadow-xl flex flex-col p-4 gap-4 md:hidden">
+
+                <!-- Mobile Year Control -->
+                <div class="flex justify-center items-center gap-4">
+                    <button id="mobile-prev-year" class="text-white/70 hover:text-white p-2 bg-white/5 rounded-full">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <span id="mobile-year-display" class="font-mono font-bold text-white text-xl">2026</span>
+                    <button id="mobile-next-year" class="text-white/70 hover:text-white p-2 bg-white/5 rounded-full">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Mobile Tabs -->
+                <div class="flex flex-col gap-2">
+                    <button id="mobile-tab-international"
+                        class="w-full font-bold py-2 rounded-lg text-center transition-all">International</button>
+                    <button id="mobile-tab-domestic"
+                        class="w-full font-bold py-2 rounded-lg text-center transition-all">Domestic</button>
+                </div>
+
+                <!-- Mobile Theme Toggle -->
+                <div class="flex justify-center mt-2">
+                    <button id="mobile-theme-toggle"
+                        class="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg text-white font-bold w-full border border-white/10 shadow-sm hover:bg-white/10 transition-colors">
+                        <span id="mobile-theme-text">Switch into Dark Mode</span>
+                        <div
+                            class="relative h-8 w-8 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center overflow-hidden">
+                            <!-- Mobile Sun -->
+                            <svg id="mobile-icon-sun"
+                                class="w-5 h-5 text-amber-400 absolute transition-all duration-500 rotate-0 scale-100 opacity-100"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                                </path>
+                            </svg>
+                            <!-- Mobile Moon -->
+                            <svg id="mobile-icon-moon"
+                                class="w-5 h-5 text-sky-400 absolute transition-all duration-500 rotate-90 scale-0 opacity-0"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                                </path>
+                            </svg>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Mobile Footer Content (Removed as requested, main footer will be shown) -->
+            </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-1 w-full pt-1 px-[2px] pb-0">
+        <main id="app-content" class="w-full overflow-x-auto">
+            <!-- Roster Injected Here -->
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer
+        class="text-center font-bold text-[#ffffff] text-[0.6rem] md:text-base py-3 border-t border-white/10 bg-[linear-gradient(to_right,#6366f1_10%,#0ea5e9_30%,#10b981_90%)]">
+        &copy; <span id="footer-year"></span> Sandwip Kumar Das. All Rights Reserved &bull;
+        <span class="text-red-800 font-red bold px-1 rounded-sm underline">Attention: Only For Learning
+            Purposes!</span> &bull;
+        Email:sandwip.ict@outlook.com
+    </footer>
+
+    <script src="main.js" type="module"></script>
+</body>
+
+</html>

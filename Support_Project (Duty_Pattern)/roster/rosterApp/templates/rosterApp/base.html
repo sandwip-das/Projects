@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duty Roster {% block title %}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        accent: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .table-glass {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+        th, td {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Left: App Name -->
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                        Duty Roster
+                    </span>
+                </div>
+
+                <!-- Center/Right: Navigation -->
+                <div class="flex items-center space-x-4">
+                    <!-- Year Dropdown -->
+                    <form action="" method="get" class="flex items-center space-x-2">
+                        <label for="year-select" class="text-sm font-medium text-slate-400">Year:</label>
+                        <select id="year-select" onchange="changeYear(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-primary focus:border-primary block w-24 p-2.5">
+                            {% for y in years %}
+                                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+
+                    <!-- Links -->
+                    <div class="flex space-x-2 bg-slate-800 rounded-lg p-1">
+                        <a href="{% url 'international_roster' year %}" 
+                           class="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if roster_type == 'international' %}bg-primary text-white shadow-lg{% else %}text-slate-400 hover:text-white hover:bg-slate-700{% endif %}">
+                            International
+                        </a>
+                        <a href="{% url 'domestic_roster' year %}" 
+                           class="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if roster_type == 'domestic' %}bg-secondary text-white shadow-lg{% else %}text-slate-400 hover:text-white hover:bg-slate-700{% endif %}">
+                            Domestic
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-20 px-4 pb-8 overflow-x-auto">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-6">
+        <div class="max-w-full mx-auto px-4 text-center">
+            <p class="text-slate-500 text-sm">
+                &copy; {{ year }} Duty Roster App. All Rights Reserved.
+            </p>
+            <div class="mt-2 space-x-4 text-xs text-slate-600">
+                <a href="#" class="hover:text-slate-400">Terms & Conditions</a>
+                <a href="#" class="hover:text-slate-400">Privacy Policy</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function changeYear(selectedYear) {
+            const currentPath = window.location.pathname;
+            // Path is usually /roster_type/year/
+            // Regex to replace year
+            const newPath = currentPath.replace(/\/\d{4}\//, '/' + selectedYear + '/');
+            // Check if year matched (if index page redirected to year, it works)
+            if (newPath === currentPath) {
+                // Should not happen if strictly on year URLs
+                // But if fallback:
+                if (currentPath.includes('international')) {
+                    window.location.href = '/international/' + selectedYear + '/';
+                } else if (currentPath.includes('domestic')) {
+                    window.location.href = '/domestic/' + selectedYear + '/';
+                } else {
+                     window.location.href = '/international/' + selectedYear + '/';
+                }
+            } else {
+                window.location.href = newPath;
+            }
+        }
+    </script>
+</body>
+</html>
