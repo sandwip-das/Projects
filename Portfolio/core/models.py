@@ -1,0 +1,360 @@
+from django.db import models
+from ckeditor.fields import RichTextField
+from django.utils.text import slugify
+from django.core.exceptions import ValidationError
+
+
+class SingletonModel(models.Model):
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.pk and self.__class__.objects.exists():
+            # If you want to prevent creation of more than one object:
+            raise ValidationError(f"There can be only one {self.__class__.__name__} instance")
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+class HomeSettings(SingletonModel):
+    # Site Config
+    site_title = models.CharField(max_length=100, default="Portfolio")
+    logo = models.ImageField(upload_to='core/site/', blank=True, help_text="Upload your logo here")
+    favicon = models.ImageField(upload_to='core/site/', blank=True)
+    
+    # Hero Section
+    hero_greeting = models.CharField(max_length=100, default="Hello, I am")
+    hero_name = models.CharField(max_length=100, default="Your Name")
+    hero_subtitle = models.CharField(max_length=100, default="Software Engineer")
+    hero_description = models.TextField(blank=True)
+    hero_bg_image = models.ImageField(upload_to='core/hero/', blank=True, help_text="Background image for hero section")
+    hero_profile_image = models.ImageField(upload_to='core/hero/', blank=True, help_text="Your transparent profile picture")
+    resume_file = models.FileField(upload_to='core/docs/', blank=True, help_text="Your CV/Resume")
+    
+    # About Section
+    about_title = models.CharField(max_length=100, default="About Me")
+    about_description = models.TextField(blank=True)
+    about_who_am_i = models.TextField(blank=True, help_text="Text for the 'Who am I?' section")
+    
+    # Contact Section Info
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.CharField(max_length=200, blank=True)
+    
+    # Skills/Services/Projects Intro Text
+    technical_skills_description = models.TextField(blank=True, help_text="Intro text for the Technical Skills section")
+    services_description = models.TextField(blank=True, help_text="Intro text for the My Services section")
+    projects_description = models.TextField(blank=True, help_text="Intro text for the Featured Projects section")
+
+    # Social Media Links & Logos
+    linkedin_url = models.URLField(blank=True, help_text="LinkedIn Profile URL")
+    linkedin_logo = models.ImageField(upload_to='core/social/', blank=True, help_text="LinkedIn Logo (Transparent Background)")
+    facebook_url = models.URLField(blank=True, help_text="Facebook Profile URL")
+    facebook_logo = models.ImageField(upload_to='core/social/', blank=True, help_text="Facebook Logo (Transparent Background)")
+    github_url = models.URLField(blank=True, help_text="GitHub Profile URL")
+    github_logo = models.ImageField(upload_to='core/social/', blank=True, help_text="GitHub Logo (Transparent Background)")
+    instagram_url = models.URLField(blank=True, help_text="Instagram Profile URL")
+    instagram_logo = models.ImageField(upload_to='core/social/', blank=True, help_text="Instagram Logo (Transparent Background)")
+    x_url = models.URLField(blank=True, help_text="X (Twitter) Profile URL")
+    x_logo = models.ImageField(upload_to='core/social/', blank=True, help_text="X (Twitter) Logo (Transparent Background)")
+    
+    # Footer
+    footer_copyright = models.CharField(max_length=200, default="© 2026 All Rights Reserved.")
+
+    # Blog Section
+    blog_section_title = models.CharField(max_length=100, default="My Blog")
+    blog_section_description = models.TextField(blank=True, help_text="About My Blog - shown under the My Blog container")
+
+    def __str__(self):
+        return "Home Page Configuration"
+
+    class Meta:
+        verbose_name = "Home Page Content"
+        verbose_name_plural = "Home Page Content"
+
+# --- PROXY MODELS FOR ADMIN REORDER ---
+
+class NavbarSettings(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Navbar Settings"
+        verbose_name_plural = "Navbar Settings"
+
+class HeroMainSettings(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Hero Main"
+        verbose_name_plural = "Hero Main"
+
+class HeroSocialSettings(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Social Media"
+        verbose_name_plural = "Social Media"
+
+class AboutSectionSettings(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "About Me Main"
+        verbose_name_plural = "About Me Main"
+
+# ExpertiseSectionSettings removed/unused if we use direct model registration (Trainings/Certs)
+class ExpertiseSectionSettings(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Expertise Settings"
+        verbose_name_plural = "Expertise Settings"
+
+class BlogSectionSettings(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Blog Section Description"
+        verbose_name_plural = "Blog Section Description"
+
+class ContactSectionSettings(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Contact Components"
+        verbose_name_plural = "Contact Components"
+
+class FooterSettings(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Footer Text"
+        verbose_name_plural = "Footer Text"
+
+# --- REAL MODELS & INLINES ---
+
+class Experience(models.Model):
+    company_name = models.CharField(max_length=200)
+    company_logo = models.ImageField(upload_to='core/company_logos/', blank=True, null=True)
+    designation = models.CharField(max_length=200)
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True, help_text="Leave blank if currently working here")
+    is_current = models.BooleanField(default=False, verbose_name="I currently work here")
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"{self.designation} at {self.company_name}"
+
+    @property
+    def duration_string(self):
+        start_str = self.start_date.strftime('%b %Y')
+        if self.is_current or not self.end_date:
+            return f"{start_str} - Present"
+        return f"{start_str} - {self.end_date.strftime('%b %Y')}"
+
+    @property
+    def description_list(self):
+        return [line.strip() for line in self.description.split('\n') if line.strip()]
+
+class Project(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    image = models.ImageField(upload_to='core/projects/', help_text="Cover Image")
+    tech_stack = models.CharField(max_length=200, help_text="Comma separated technologies")
+    live_link = models.URLField(blank=True)
+    repo_link = models.URLField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    @property
+    def tech_list(self):
+        return [tech.strip() for tech in self.tech_stack.split(',') if tech.strip()] if self.tech_stack else []
+
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.title
+
+class ProjectImage(models.Model):
+    project = models.ForeignKey(Project, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='core/projects/gallery/')
+    
+    def __str__(self):
+        return f"{self.project.title} Image"
+
+class Service(models.Model):
+    title = models.CharField(max_length=100)
+    icon_class = models.CharField(max_length=50, default="fas fa-layer-group", help_text="Font Awesome class")
+    features = models.TextField(help_text="One feature per line")
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'title']
+
+    def __str__(self):
+        return self.title
+    
+    @property
+    def feature_list(self):
+        return [f.strip() for f in self.features.split('\n') if f.strip()]
+
+class ServiceBooking(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='bookings')
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    preferred_date = models.DateField()
+    preferred_time = models.TimeField()
+    additional_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Service Booking"
+        verbose_name_plural = "Service Bookings"
+
+    def __str__(self):
+        return f"{self.name} - {self.service.title}"
+
+# INLINED MODELS (Linked to HomeSettings for grouping)
+
+class AcademicBackground(models.Model):
+    # Link to AboutSectionSettings (which is HomeSettings)
+    settings = models.ForeignKey(HomeSettings, on_delete=models.CASCADE, default=1, related_name='academic_backgrounds')
+    institution_name = models.CharField(max_length=200)
+    institution_logo = models.ImageField(upload_to='core/academic/', blank=True, null=True)
+    degree_name = models.CharField(max_length=200)
+    institution_link = models.URLField(blank=True)
+    description = models.TextField(help_text="Bullet points separated by new lines")
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Academic Background"
+        ordering = ['order', 'institution_name']
+
+    def __str__(self):
+        return f"{self.degree_name} at {self.institution_name}"
+    
+    @property
+    def description_list(self):
+        return [line.strip() for line in self.description.split('\n') if line.strip()]
+
+class SkillCategory(models.Model):
+    settings = models.ForeignKey(HomeSettings, on_delete=models.CASCADE, default=1, related_name='skill_categories')
+    name = models.CharField(max_length=100)
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        verbose_name_plural = "Skill Categories"
+        ordering = ['order', 'name']
+        
+    def __str__(self):
+        return self.name
+
+class SkillItem(models.Model):
+    category = models.ForeignKey(SkillCategory, related_name='items', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order', 'name']
+        
+    def __str__(self):
+        return self.name
+
+class ProfessionalTraining(models.Model):
+    settings = models.ForeignKey(HomeSettings, on_delete=models.CASCADE, default=1, related_name='professional_trainings')
+    MODE_CHOICES = [('Online', 'Online'), ('Offline', 'Offline')]
+    CATEGORY_CHOICES = [('TRAINING', 'Professional Training'), ('CERTIFICATION', 'Global Certification')]
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='TRAINING')
+    course_name = models.CharField(max_length=200)
+    organization_name = models.CharField(max_length=200)
+    mode = models.CharField(max_length=20, choices=MODE_CHOICES, default='Online')
+    image = models.ImageField(upload_to='core/training/', blank=True, null=True)
+    certification_link = models.URLField(blank=True, null=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Professional Training & Certifications"
+        ordering = ['order', 'course_name']
+
+    def __str__(self):
+        return f"{self.course_name} from {self.organization_name}"
+
+# PROXY MODELS FOR EXPERTISE Splitting
+class ProfessionalTrainingModel(ProfessionalTraining): # Proxy Model
+    class Meta:
+        proxy = True
+        verbose_name = "Professional Training"
+        verbose_name_plural = "Professional Trainings"
+
+class GlobalCertificationModel(ProfessionalTraining): # Proxy Model
+    class Meta:
+        proxy = True
+        verbose_name = "Global Certification"
+        verbose_name_plural = "Global Certifications"
+
+class BlogPost(models.Model):
+    settings = models.ForeignKey(HomeSettings, on_delete=models.CASCADE, default=1, related_name='blog_posts')
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='core/blog/')
+    content = RichTextField()
+    views = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name} - {self.subject}"
+
+# Legacy Models
+class Skill(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='core/skills/', blank=True)
+    icon_class = models.CharField(max_length=50, blank=True)
+    dominant_color = models.CharField(max_length=7, blank=True, default='')
+    order = models.IntegerField(default=0)
+    class Meta: 
+        ordering = ['order', 'name']
+    def __str__(self): return self.name
+
+class SocialLink(models.Model):
+    platform_name = models.CharField(max_length=50)
+    icon_class = models.CharField(max_length=50)
+    url = models.URLField()
+    def __str__(self): return self.platform_name
+
+class AboutMeItem(models.Model):
+    CATEGORY_CHOICES = [
+        ('FOCUS', 'Professional Focus'),
+        ('SKILL', 'Key Skills'),
+        ('ROLE', 'Current Roles'),
+    ]
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
+    text = models.CharField(max_length=200)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['category', 'order']
+        verbose_name_plural = "About Me Items"
+
+    def __str__(self):
+        return f"{self.get_category_display()}: {self.text}"

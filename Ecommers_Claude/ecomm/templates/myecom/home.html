@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6 mb-8">
+    <!-- Sidebar Categories (Desktop) -->
+    <aside class="hidden md:block w-1/4 bg-white rounded shadow-sm border border-gray-200">
+        <div class="bg-primary text-white font-bold py-3 px-4 uppercase text-sm tracking-wide rounded-t">
+            <i class="fas fa-bars mr-2"></i> Categories
+        </div>
+        <ul class="divide-y divide-gray-100 text-sm">
+            {% for category in categories %}
+            <li class="relative group">
+                <a href="{% url 'product_list' %}?category={{ category.slug }}"
+                    class="block py-2.5 px-4 hover:text-primary transition flex justify-between items-center">
+                    <span>{{ category.name }}</span>
+                    <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                </a>
+            </li>
+            {% endfor %}
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition border-t border-gray-100">Desktop</a>
+            </li>
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition">Laptop</a></li>
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition">Component</a></li>
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition">Monitor</a></li>
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition">UPS</a></li>
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition">Office Equipment</a></li>
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition">Camera</a></li>
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition">Security</a></li>
+            <li><a href="#" class="block py-2.5 px-4 hover:text-primary transition rounded-b">Gaming</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Banner -->
+    <div class="w-full md:w-3/4">
+        <div class="relative rounded-lg overflow-hidden shadow-sm h-[400px]">
+            <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+                alt="Hero Banner" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center">
+                <div class="text-white px-12 max-w-lg">
+                    <span
+                        class="bg-primary text-xs font-bold px-2 py-1 rounded mb-4 inline-block uppercase tracking-wider">New
+                        Arrival</span>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">Next Gen Gaming Experience</h1>
+                    <p class="text-lg md:text-xl mb-8 opacity-90">Upgrade your setup with the latest RTX 40 Series
+                        graphics cards.</p>
+                    <a href="{% url 'product_list' %}"
+                        class="bg-white text-dark hover:bg-primary hover:text-white font-bold py-3 px-8 rounded transition duration-300 inline-block uppercase tracking-wide text-sm">
+                        Shop Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Small Banners -->
+        <div class="grid grid-cols-3 gap-6 mt-6">
+            <div
+                class="bg-gray-100 rounded-lg p-6 flex flex-col justify-center items-start h-40 border border-gray-200 hover:shadow-md transition cursor-pointer">
+                <h3 class="font-bold text-lg mb-1">Laptop</h3>
+                <p class="text-gray-500 text-sm mb-3">Up to 20% Off</p>
+                <span class="text-primary text-xs font-bold uppercase">Shop Now <i
+                        class="fas fa-arrow-right ml-1"></i></span>
+            </div>
+            <div
+                class="bg-gray-100 rounded-lg p-6 flex flex-col justify-center items-start h-40 border border-gray-200 hover:shadow-md transition cursor-pointer">
+                <h3 class="font-bold text-lg mb-1">Desktop</h3>
+                <p class="text-gray-500 text-sm mb-3">Build Your PC</p>
+                <span class="text-primary text-xs font-bold uppercase">Start Building <i
+                        class="fas fa-arrow-right ml-1"></i></span>
+            </div>
+            <div
+                class="bg-gray-100 rounded-lg p-6 flex flex-col justify-center items-start h-40 border border-gray-200 hover:shadow-md transition cursor-pointer">
+                <h3 class="font-bold text-lg mb-1">Accessories</h3>
+                <p class="text-gray-500 text-sm mb-3">New Collection</p>
+                <span class="text-primary text-xs font-bold uppercase">Discover <i
+                        class="fas fa-arrow-right ml-1"></i></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Products -->
+<section class="mb-12">
+    <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-2">
+        <h2
+            class="text-xl font-bold text-gray-800 uppercase tracking-wide border-b-2 border-primary -mb-2.5 pb-2 inline-block">
+            Featured Products</h2>
+        <a href="{% url 'product_list' %}" class="text-sm font-medium text-gray-500 hover:text-primary mb-2">View All <i
+                class="fas fa-angle-right ml-1"></i></a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {% for product in featured_products %}
+        <div
+            class="bg-white rounded hover:shadow-lg transition duration-300 border border-gray-100 group flex flex-col h-full">
+            <div class="relative p-4 flex-grow-0">
+                <a href="{% url 'product_detail' product.slug %}" class="block overflow-hidden relative"
+                    style="padding-top: 100%;">
+                    {% if product.images.first %}
+                    <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
+                        class="absolute top-0 left-0 w-full h-full object-contain group-hover:scale-105 transition duration-500">
+                    {% else %}
+                    <div class="absolute top-0 left-0 w-full h-full bg-gray-50 flex items-center justify-center">
+                        <i class="fas fa-image text-gray-300 text-3xl"></i>
+                    </div>
+                    {% endif %}
+                </a>
+
+                {% if product.discount_type != 'none' %}
+                <span
+                    class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
+                    {% if product.discount_type == 'percentage' %}
+                    -{{ product.discount_value|floatformat:0 }}%
+                    {% else %}
+                    SALE
+                    {% endif %}
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="p-4 flex flex-col flex-grow">
+                <a href="{% url 'product_detail' product.slug %}" class="block mb-2">
+                    <h3 class="text-sm font-medium text-gray-800 hover:text-primary line-clamp-2 h-10 leading-snug"
+                        title="{{ product.name }}">{{ product.name }}</h3>
+                </a>
+
+                <div class="mt-auto">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <span class="text-primary font-bold text-base">{{ product.currency }} {{
+                                product.final_price|floatformat:0 }}</span>
+                            {% if product.final_price < product.base_price %} <span
+                                class="text-gray-400 text-xs line-through ml-1">{{ product.currency }} {{
+                                product.base_price|floatformat:0 }}</span>
+                                {% endif %}
+                        </div>
+                    </div>
+
+                    <button
+                        class="w-full bg-slate-100 text-slate-700 hover:bg-black hover:text-white font-semibold py-2 rounded text-xs transition uppercase tracking-wide flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white border border-slate-200 group-hover:border-transparent">
+                        <i class="fas fa-cart-plus"></i> Buy Now
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12 text-gray-500 bg-white rounded border border-gray-100">
+            No featured products found.
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Trending -->
+<section class="mb-12">
+    <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-2">
+        <h2
+            class="text-xl font-bold text-gray-800 uppercase tracking-wide border-b-2 border-primary -mb-2.5 pb-2 inline-block">
+            Trending Items</h2>
+        <a href="{% url 'product_list' %}?sort=popularity"
+            class="text-sm font-medium text-gray-500 hover:text-primary mb-2">View All <i
+                class="fas fa-angle-right ml-1"></i></a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for product in trending_products %}
+        <div
+            class="bg-white rounded hover:shadow-md transition duration-300 border border-gray-100 group flex flex-col">
+            <div class="relative p-4">
+                <a href="{% url 'product_detail' product.slug %}" class="block" style="height: 180px;">
+                    {% if product.images.first %}
+                    <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
+                        class="w-full h-full object-contain group-hover:scale-105 transition duration-500">
+                    {% else %}
+                    <div class="w-full h-full bg-gray-50 flex items-center justify-center">
+                        <i class="fas fa-image text-gray-300 text-3xl"></i>
+                    </div>
+                    {% endif %}
+                </a>
+            </div>
+
+            <div class="p-4 flex flex-col flex-grow">
+                <p class="text-xs text-gray-500 mb-1">{{ product.category.name }}</p>
+                <a href="{% url 'product_detail' product.slug %}" class="block mb-2">
+                    <h3 class="text-sm font-medium text-gray-800 hover:text-primary truncate">{{ product.name }}</h3>
+                </a>
+
+                <div class="mt-auto pt-2 border-t border-gray-50 flex justify-between items-center">
+                    <span class="text-primary font-bold">{{ product.currency }} {{ product.final_price|floatformat:0
+                        }}</span>
+                    <button class="text-gray-400 hover:text-primary transition" title="Add to Cart">
+                        <i class="fas fa-cart-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

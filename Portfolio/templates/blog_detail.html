@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pt-24 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <div class="glass-card p-8 md:p-12">
+            <div class="mb-8">
+                <span
+                    class="px-4 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium border border-blue-500/30">
+                    {{ post.category }}
+                </span>
+                <h1 class="text-4xl md:text-5xl font-bold text-white mt-6 mb-4">{{ post.title }}</h1>
+                <div class="flex items-center gap-4 text-sm text-gray-400">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-user-circle text-xs text-primary"></i>
+                        <span class="font-bold text-gray-300">Editor:</span>
+                        <span class="text-white">{{ settings.hero_name|default:"Sandwip" }}</span>
+                    </div>
+                    <div class="w-px h-3 bg-white/10"></div>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-calendar-alt text-xs text-secondary"></i>
+                        <span>{{ post.created_at|date:"F d, Y" }} at {{ post.created_at|date:"H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if post.image %}
+            <div class="rounded-2xl overflow-hidden mb-12 border border-white/10 shadow-2xl">
+                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="w-full h-auto object-cover">
+            </div>
+            {% endif %}
+
+            <div class="prose prose-invert prose-lg max-w-none text-white leading-relaxed">{{ post.content|safe }}</div>
+
+            <div class="mt-12 pt-12 border-t border-white/10">
+                <a href="{% url 'home' %}#blog"
+                    class="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors group">
+                    <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>
+                    Back to Portfolio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for full post detail */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+</style>
+{% endblock %}

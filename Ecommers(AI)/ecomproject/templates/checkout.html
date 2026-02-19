@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto max-w-5xl">
+    <h1 class="text-3xl font-bold mb-8 text-center text-gray-900 border-b pb-4">Checkout</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- checkout Form -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white p-6 shadow-md rounded-lg">
+                <h2 class="text-xl font-bold mb-6 flex items-center text-gray-800">
+                    <i class="fas fa-shipping-fast mr-2 text-indigo-600"></i> Shipping Address
+                </h2>
+                <form method="POST" id="checkout-form" class="space-y-4">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                            {{ form.street.errors }}
+                            <input type="text" name="street"
+                                class="w-full border rounded px-3 py-2 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            {{ form.city.errors }}
+                            <input type="text" name="city"
+                                class="w-full border rounded px-3 py-2 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">State / Province</label>
+                            {{ form.state.errors }}
+                            <input type="text" name="state"
+                                class="w-full border rounded px-3 py-2 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
+                            {{ form.zip_code.errors }}
+                            <input type="text" name="zip_code"
+                                class="w-full border rounded px-3 py-2 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                required>
+                        </div>
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                            {{ form.country.errors }}
+                            <input type="text" name="country"
+                                class="w-full border rounded px-3 py-2 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                required>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <h2 class="text-xl font-bold mt-8 mb-6 flex items-center text-gray-800 border-t pt-6">
+                        <i class="fas fa-credit-card mr-2 text-indigo-600"></i> Payment Method
+                    </h2>
+                    <div class="space-y-3">
+                        <label
+                            class="flex items-center p-4 border rounded cursor-pointer hover:bg-gray-50 bg-white shadow-sm transition">
+                            <input type="radio" name="payment_method" value="cod" checked
+                                class="form-radio text-indigo-600 h-5 w-5">
+                            <span class="ml-3 font-medium text-gray-800">Cash on Delivery (COD)</span>
+                            <i class="fas fa-money-bill-wave ml-auto text-green-500 text-xl"></i>
+                        </label>
+                        <label
+                            class="flex items-center p-4 border rounded cursor-pointer hover:bg-gray-50 bg-white shadow-sm transition opacity-50 cursor-not-allowed"
+                            title="Coming Soon">
+                            <input type="radio" name="payment_method" value="sslcommerz" disabled
+                                class="form-radio text-indigo-600 h-5 w-5">
+                            <span class="ml-3 font-medium text-gray-800">SSLCommerz (Online Payment)</span>
+                            <i class="fas fa-lock ml-auto text-gray-400 text-xl"></i>
+                        </label>
+                    </div>
+
+                    <div class="flex justify-between items-center mt-8">
+                        <a href="{% url 'cart_detail' %}"
+                            class="text-indigo-600 hover:text-indigo-800 font-medium">Return to Cart</a>
+                        <button type="submit"
+                            class="bg-indigo-600 text-white px-8 py-3 rounded hover:bg-indigo-700 transition font-bold shadow-lg transform hover:scale-105">Place
+                            Order</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Review Order -->
+        <div class="lg:col-span-1">
+            <div class="bg-gray-50 p-6 rounded-lg sticky top-24 shadow-inner border border-gray-100">
+                <h2 class="text-lg font-bold mb-4 text-gray-800">Order Summary</h2>
+                <ul class="space-y-4 mb-6 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                    {% for item in cart_items %}
+                    <!-- Assuming checkout view passes cart_items (product, qty, price) tuple list -->
+                    <li class="flex justify-between items-start text-sm">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-10 h-10 bg-white rounded overflow-hidden shadow-sm">
+                                {% if item.0.image %}
+                                <img src="{{ item.0.image.url }}" class="w-full h-full object-cover">
+                                {% endif %}
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-700 block truncate w-24">{{ item.0.title }}</span>
+                                <span class="text-xs text-gray-500">Qty: {{ item.1 }}</span>
+                            </div>
+                        </div>
+                        <span class="font-bold text-gray-800">${{ item.2 }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="border-t pt-4 space-y-2 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                        <span>Subtotal</span>
+                        <span>${{ total_price|floatformat:2 }}</span>
+                    </div>
+                    {% if coupon %}
+                    <div class="flex justify-between text-green-600 font-bold">
+                        <span>Discount ({{ coupon.code }})</span>
+                        <span>-${{ discount_amount|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between">
+                        <span>Shipping</span>
+                        <span>$0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Tax</span>
+                        <span>$0.00</span>
+                    </div>
+                    <div
+                        class="flex justify-between text-lg font-bold text-indigo-600 mt-2 border-t pt-2 border-gray-200">
+                        <span>Total</span>
+                        <span>${{ final_total|floatformat:2 }}</span>
+                    </div>
+                </div>
+
+                <!-- Coupon Code -->
+                <form action="{% url 'apply_coupon' %}" method="POST" class="mt-6 pt-6 border-t border-gray-200">
+                    {% csrf_token %}
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Have a coupon?</label>
+                    <div class="flex space-x-2">
+                        <input type="text" name="code" placeholder="Enter code"
+                            class="flex-1 p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none uppercase"
+                            required>
+                        <button type="submit"
+                            class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 font-bold transition">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

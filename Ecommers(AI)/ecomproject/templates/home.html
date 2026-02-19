@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="mb-12 rounded-2xl overflow-hidden shadow-2xl relative bg-indigo-900 text-white h-96 flex items-center">
+    <div class="absolute inset-0 bg-gradient-to-r from-indigo-900 to-transparent z-10 w-2/3"></div>
+    <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+        alt="Hero" class="absolute inset-0 w-full h-full object-cover">
+    <div class="container mx-auto px-12 relative z-20">
+        <h1 class="text-5xl font-bold mb-4 drop-shadow-md">Premium Shopping<br>Experience</h1>
+        <p class="text-xl mb-8 text-indigo-100 drop-shadow-sm max-w-lg">Discover the latest trends and exclusive offers
+            on our premium collection.</p>
+        <a href="{% url 'shop' %}"
+            class="bg-white text-indigo-900 px-8 py-3 rounded-full font-bold hover:bg-indigo-50 transition shadow-lg inline-block hover:scale-105 transform">Shop
+            Now</a>
+    </div>
+</section>
+
+<!-- Categories -->
+<section class="mb-16">
+    <h2 class="text-3xl font-bold mb-8 text-gray-800 border-l-4 border-indigo-600 pl-4">Shop by Category</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        {% for category in categories %}
+        <a href="{% url 'shop' %}?category={{ category.slug }}" class="group block text-center">
+            <div
+                class="rounded-full overflow-hidden w-32 h-32 mx-auto mb-4 border-4 border-white shadow-lg group-hover:border-indigo-500 transition-all duration-300 transform group-hover:scale-110">
+                {% if category.image %}
+                <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                    <i class="fas fa-image text-2xl"></i>
+                </div>
+                {% endif %}
+            </div>
+            <h3 class="font-bold text-gray-700 group-hover:text-indigo-600">{{ category.name }}</h3>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Trending Products -->
+<section class="mb-16">
+    <div class="flex justify-between items-end mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 border-l-4 border-indigo-600 pl-4">Trending Now</h2>
+        <a href="{% url 'shop' %}?sort=trending" class="text-indigo-600 font-bold hover:underline">View All</a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {% for product in trending %}
+        <div
+            class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group border border-gray-100 relative">
+            {% if product.stock == 0 %}
+            <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-10">Out of Stock</span>
+            {% elif product.is_trending %}
+            <span class="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded z-10">Trending</span>
+            {% endif %}
+
+            <a href="{% url 'product_detail' product.slug %}" class="block overflow-hidden h-64 bg-gray-100 relative">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.title }}"
+                    class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-gray-400"><i
+                        class="fas fa-box text-4xl"></i></div>
+                {% endif %}
+
+                <!-- Quick Action Overlay -->
+                <div
+                    class="absolute bottom-0 left-0 right-0 bg-white/90 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-around">
+                    <form action="{% url 'add_to_cart' product.id %}" method="POST">
+                        {% csrf_token %}
+                        <button class="text-indigo-600 hover:text-indigo-800" title="Add to Cart">
+                            <i class="fas fa-cart-plus text-xl"></i>
+                        </button>
+                    </form>
+                    <a href="{% url 'product_detail' product.slug %}" class="text-gray-600 hover:text-gray-800"
+                        title="View Details">
+                        <i class="fas fa-eye text-xl"></i>
+                    </a>
+                </div>
+            </a>
+
+            <div class="p-4">
+                <p class="text-gray-500 text-xs mb-1">{{ product.category.name }}</p>
+                <h3 class="font-bold text-lg mb-2 text-gray-800 truncate">{{ product.title }}</h3>
+                <div class="flex justify-between items-center">
+                    <span class="text-indigo-600 font-bold text-xl">${{ product.price }}</span>
+                    <div class="flex text-yellow-400 text-xs">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- New Arrivals -->
+<section class="mb-16">
+    <div class="flex justify-between items-end mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 border-l-4 border-indigo-600 pl-4">New Arrivals</h2>
+        <a href="{% url 'shop' %}?sort=newest" class="text-indigo-600 font-bold hover:underline">View All</a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {% for product in new_arrivals %}
+        <div
+            class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group border border-gray-100 flex flex-col h-full">
+            <a href="{% url 'product_detail' product.slug %}" class="block overflow-hidden h-64 bg-gray-100 relative">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.title }}"
+                    class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                {% endif %}
+                <span class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">New</span>
+            </a>
+            <div class="p-4 mt-auto">
+                <h3 class="font-bold text-lg mb-2 text-gray-800 truncate">{{ product.title }}</h3>
+                <span class="text-indigo-600 font-bold text-xl">${{ product.price }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

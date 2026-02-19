@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-8 min-h-[600px]">
+    <!-- Sidebar -->
+    <aside class="w-full md:w-1/4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
+                    {% if user.profile_image %}
+                    <img src="{{ user.profile_image }}" alt="{{ user.first_name }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <div
+                        class="w-full h-full flex items-center justify-center bg-primary text-white text-2xl font-bold">
+                        {{ user.first_name|first }}{{ user.last_name|first }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg">{{ user.get_full_name }}</h3>
+                    <p class="text-sm text-gray-500">{{ user.email }}</p>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="{% url 'dashboard' %}"
+                    class="flex items-center px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'dashboard' %}bg-primary/10 text-primary font-medium{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition">
+                    <i class="fas fa-columns w-6"></i>
+                    Overview
+                </a>
+                <a href="{% url 'order_list' %}"
+                    class="flex items-center px-4 py-3 rounded-lg {% if 'orders' in request.path %}bg-primary/10 text-primary font-medium{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition">
+                    <i class="fas fa-box w-6"></i>
+                    My Orders
+                </a>
+                <a href="{% url 'profile_edit' %}"
+                    class="flex items-center px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'profile_edit' %}bg-primary/10 text-primary font-medium{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition">
+                    <i class="fas fa-user-edit w-6"></i>
+                    Edit Profile
+                </a>
+                <a href="{% url 'wishlist' %}"
+                    class="flex items-center px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'wishlist' %}bg-primary/10 text-primary font-medium{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition">
+                    <i class="fas fa-heart w-6"></i>
+                    Wishlist
+                </a>
+                <a href="{% url 'address_list' %}"
+                    class="flex items-center px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'address_list' %}bg-primary/10 text-primary font-medium{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition">
+                    <i class="fas fa-map-marker-alt w-6"></i>
+                    Addresses
+                </a>
+                <div class="border-t border-gray-100 my-2"></div>
+                <a href="{% url 'logout' %}"
+                    class="flex items-center px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition">
+                    <i class="fas fa-sign-out-alt w-6"></i>
+                    Logout
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="w-full md:w-3/4">
+        {% block dashboard_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

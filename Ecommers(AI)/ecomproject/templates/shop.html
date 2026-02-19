@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-8">
+    <!-- Sidebar Filters -->
+    <aside class="w-full md:w-1/4 lg:w-1/5 bg-white p-6 rounded-lg shadow-md h-fit sticky top-24 z-10">
+        <h2 class="text-xl font-bold mb-6 border-b pb-2">Filters</h2>
+
+        <form method="get" action="{% url 'shop' %}">
+            <!-- Search Preservation -->
+            {% if request.GET.q %}
+            <input type="hidden" name="q" value="{{ request.GET.q }}">
+            {% endif %}
+
+            <!-- Category -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3">Categories</h3>
+                <ul class="space-y-2 text-sm text-gray-600">
+                    <li>
+                        <a href="{% url 'shop' %}"
+                            class="{% if not request.GET.category %}text-indigo-600 font-bold{% endif %} hover:text-indigo-600">All
+                            Categories</a>
+                    </li>
+                    {% for cat in categories %}
+                    <li>
+                        <a href="?category={{ cat.slug }}"
+                            class="{% if request.GET.category == cat.slug %}text-indigo-600 font-bold{% endif %} hover:text-indigo-600">
+                            {{ cat.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Price -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3">Price Range</h3>
+                <div class="flex items-center space-x-2">
+                    <input type="number" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}"
+                        class="w-full border rounded px-2 py-1 text-sm">
+                    <span>-</span>
+                    <input type="number" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}"
+                        class="w-full border rounded px-2 py-1 text-sm">
+                </div>
+            </div>
+
+            <!-- Brand -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3">Brands</h3>
+                <div class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                    {% for brand in brands %}
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input type="radio" name="brand" value="{{ brand.slug }}" {% if request.GET.brand==brand.slug
+                            %}checked{% endif %} class="form-radio text-indigo-600 focus:ring-indigo-500">
+                        <span>{{ brand.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Rating -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3">Rating</h3>
+                <div class="space-y-2">
+                    {% for i in "54321"|make_list %}
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input type="radio" name="rating" value="{{ i }}" {% if request.GET.rating==i %}checked{% endif
+                            %} class="form-radio text-indigo-600 focus:ring-indigo-500">
+                        <div class="flex text-yellow-400 text-xs">
+                            {% for j in "xxxxx" %}
+                            <i
+                                class="fas fa-star {% if forloop.counter <= i|add:'0' %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="text-gray-500">& Up</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Availability -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3">Availability</h3>
+                <label class="flex items-center space-x-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded">
+                    <input type="checkbox" name="stock" value="in_stock" {% if request.GET.stock=='in_stock' %}checked{%
+                        endif %} class="form-checkbox text-indigo-600 focus:ring-indigo-500 rounded">
+                    <span>In Stock Only</span>
+                </label>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition font-bold">Apply
+                Filters</button>
+            <a href="{% url 'shop' %}" class="block text-center mt-3 text-sm text-gray-500 hover:text-gray-700">Clear
+                All</a>
+        </form>
+    </aside>
+
+    <!-- Product Grid -->
+    <div class="flex-1">
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center mb-6 bg-white p-4 rounded shadow-sm">
+            <span class="text-gray-600">{{ products.paginator.count }} Products Found</span>
+
+            <form method="get" class="flex items-center space-x-2">
+                <!-- Preserve other filters -->
+                {% for key, value in request.GET.items %}
+                {% if key != 'sort' and key != 'page' %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endif %}
+                {% endfor %}
+
+                <label for="sort" class="text-sm font-semibold text-gray-600">Sort By:</label>
+                <select name="sort" onchange="this.form.submit()"
+                    class="border-none bg-gray-100 rounded px-3 py-1 text-sm focus:ring-0 cursor-pointer">
+                    <option value="default" {% if request.GET.sort=='default' %}selected{% endif %}>Default</option>
+                    <option value="price_low" {% if request.GET.sort=='price_low' %}selected{% endif %}>Low to High
+                    </option>
+                    <option value="price_high" {% if request.GET.sort=='price_high' %}selected{% endif %}>High to Low
+                    </option>
+                    <option value="newest" {% if request.GET.sort=='newest' %}selected{% endif %}>Newest</option>
+                </select>
+            </form>
+        </div>
+
+        <!-- Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for product in products %}
+            <div
+                class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 group overflow-hidden border border-gray-100">
+                <div class="relative h-64 overflow-hidden bg-gray-50">
+                    <a href="{% url 'product_detail' product.slug %}">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}"
+                            class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-300"><i
+                                class="fas fa-image text-3xl"></i></div>
+                        {% endif %}
+                    </a>
+
+                    {% if product.stock == 0 %}
+                    <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Out of
+                        Stock</span>
+                    {% elif product.is_trending %}
+                    <span class="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">Hot</span>
+                    {% endif %}
+
+                    <!-- Hover Actions -->
+                    <div
+                        class="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-white/90 backdrop-blur-sm flex justify-center space-x-4">
+                        <form action="{% url 'add_to_cart' product.id %}" method="POST">
+                            {% csrf_token %}
+                            <button class="text-indigo-600 hover:text-indigo-800" title="Add to Cart">
+                                <i class="fas fa-cart-plus text-xl"></i>
+                            </button>
+                        </form>
+                        <a href="{% url 'product_detail' product.slug %}" class="text-gray-600 hover:text-indigo-600"
+                            title="View"><i class="fas fa-eye text-xl"></i></a>
+                        <a href="{% url 'add_to_compare' product.id %}" class="text-gray-600 hover:text-indigo-600"
+                            title="Compare"><i class="fas fa-exchange-alt text-xl"></i></a>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <p class="text-xs text-gray-500 mb-1">{{ product.category.name }}</p>
+                    <h3 class="font-bold text-gray-800 mb-2 truncate"><a href="{% url 'product_detail' product.slug %}"
+                            class="hover:text-indigo-600">{{ product.title }}</a></h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold text-indigo-600">${{ product.price }}</span>
+                        <div class="flex text-yellow-400 text-xs">
+                            {% for i in "xxxxx" %}
+                            <i
+                                class="fas fa-star {% if forloop.counter <= product.average_rating %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <p class="text-gray-500 text-lg">No products found matching your criteria.</p>
+                <a href="{% url 'shop' %}" class="mt-4 inline-block text-indigo-600 font-bold hover:underline">Clear
+                    Filters</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-12 flex justify-center">
+            {% if products.has_other_pages %}
+            <nav class="flex space-x-2">
+                {% if products.has_previous %}
+                <a href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                    class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+                {% endif %}
+
+                {% for i in products.paginator.page_range %}
+                {% if products.number == i %}
+                <span class="px-3 py-1 border rounded bg-indigo-600 text-white font-bold">{{ i }}</span>
+                {% else %}
+                <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                    class="px-3 py-1 border rounded hover:bg-gray-100">{{ i }}</a>
+                {% endif %}
+                {% endfor %}
+
+                {% if products.has_next %}
+                <a href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                    class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
+                {% endif %}
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

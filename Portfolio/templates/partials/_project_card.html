@@ -1,0 +1,44 @@
+{% load core_tags %}
+<!-- Project Card Partial -->
+<div
+    class="bg-gray-800 rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition duration-300 border border-gray-700 flex flex-col h-full">
+    <!-- Image -->
+    <div class="relative h-56 overflow-hidden flex-shrink-0 border-b border-gray-700 group">
+        {% if project.image %}
+        <img src="{{ project.image.url }}" alt="{{ project.title }}"
+            class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+        {% else %}
+        <div class="w-full h-full bg-gray-700 flex items-center justify-center">
+            <i class="fas fa-folder text-4xl text-gray-500"></i>
+        </div>
+        {% endif %}
+
+        <!-- Overlay Links -->
+        <div
+            class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center space-x-4 backdrop-blur-sm">
+            {% if project.live_link %}
+            <a href="{{ project.live_link }}" target="_blank" title="View Live"
+                class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center hover:bg-white hover:text-primary transition transform hover:scale-110 shadow-lg border border-white/20">
+                <i class="fas fa-external-link-alt text-lg"></i>
+            </a>
+            {% endif %}
+            {% if project.repo_link %}
+            <a href="{{ project.repo_link }}" target="_blank" title="View Code"
+                class="w-12 h-12 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-white hover:text-dark transition transform hover:scale-110 shadow-lg border border-white/20">
+                <i class="fab fa-github text-xl"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6 flex flex-col flex-grow">
+        <h3 class="text-xl font-bold mb-3 text-white">{{ project.title }}</h3>
+        <p class="text-gray-400 text-sm mb-6 leading-relaxed flex-grow">{{ project.description }}</p>
+
+        <!-- Tech Stack Badges -->
+        <div class="mt-auto pt-4 border-t border-gray-700/50">
+            <div class="flex flex-wrap gap-2">{{ project.tech_stack|tech_badges }}</div>
+        </div>
+    </div>
+</div>

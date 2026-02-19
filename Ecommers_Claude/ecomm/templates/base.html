@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MyEcom{% endblock %} | Premium E-Commerce</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#EF4A23', // Primary Red
+                        secondary: '#374151', // Gray 700
+                        dark: '#000000', // Black
+                        light: '#F5F5F7', // Light Gray
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .brand-nav-link {
+            position: relative;
+        }
+
+        .brand-nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            display: block;
+            margin-top: 5px;
+            right: 0;
+            background: #EF4A23;
+            transition: width .2s ease;
+            -webkit-transition: width .2s ease;
+        }
+
+        .brand-nav-link:hover:after {
+            width: 100%;
+            left: 0;
+            background: #EF4A23;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white sticky top-0 z-50">
+        <!-- Top Bar -->
+        <div class="bg-light text-gray-600 text-xs py-2 border-b border-gray-200 hidden md:block">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-primary transition"><i class="fas fa-map-marker-alt mr-1"></i> Store
+                        Locator</a>
+                    <a href="#" class="hover:text-primary transition"><i class="fas fa-truck mr-1"></i> Track Order</a>
+                    <a href="#" class="hover:text-primary transition"><i class="fas fa-headset mr-1"></i> Support</a>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-primary transition">Blog</a>
+                    <a href="#" class="hover:text-primary transition">Careers</a>
+                    <span class="text-primary font-bold"><i class="fas fa-phone-alt mr-1"></i> {{
+                        site_config.support_phone }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Header -->
+        <div class="bg-white py-4 shadow-sm">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center justify-between gap-8">
+                    <!-- Logo -->
+                    <a href="{% url 'home' %}" class="flex-shrink-0">
+                        <span class="text-3xl font-extrabold text-primary tracking-tighter italic">{{
+                            site_config.site_name }}</span>
+                        <!-- <span class="text-xs block text-gray-500 tracking-widest uppercase" style="margin-top: -5px;">E-Shop</span> -->
+                    </a>
+
+                    <!-- Search Bar -->
+                    <div class="hidden md:flex flex-1 max-w-3xl relative">
+                        <div class="w-full flex">
+                            <input type="text" placeholder="Search"
+                                class="w-full px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-l-md focus:outline-none focus:bg-white focus:border-dark focus:ring-0 transition">
+                            <button class="bg-dark text-white px-6 py-2.5 rounded-r-md hover:bg-gray-800 transition">
+                                <i class="fas fa-search text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Icons -->
+                    <div class="flex items-center space-x-6">
+                        <div class="flex items-center space-x-6">
+                            <a href="#"
+                                class="flex flex-col items-center group text-gray-600 hover:text-primary transition">
+                                <div class="relative">
+                                    <i class="fas fa-comment-dots text-xl mb-1"></i>
+                                    <span class="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full"></span>
+                                </div>
+                                <span class="text-[10px] uppercase font-bold tracking-wide">Offers</span>
+                            </a>
+
+                            <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}"
+                                class="flex flex-col items-center group text-gray-600 hover:text-primary transition">
+                                <i class="fas fa-user text-xl mb-1"></i>
+                                <span class="text-[10px] uppercase font-bold tracking-wide">Account</span>
+                            </a>
+
+                            <div class="relative group">
+                                <a href="#"
+                                    class="flex flex-col items-center text-gray-600 hover:text-primary transition">
+                                    <div class="relative">
+                                        <i class="fas fa-shopping-cart text-xl mb-1"></i>
+                                        <span
+                                            class="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">0</span>
+                                    </div>
+                                    <span class="text-[10px] uppercase font-bold tracking-wide">Cart</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="bg-dark text-white shadow-md">
+            <div class="container mx-auto px-4">
+                <nav class="flex items-center justify-between">
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden py-3 text-white focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+
+                    <!-- Desktop Menu -->
+                    <div
+                        class="hidden md:flex items-center space-x-8 text-sm font-medium overflow-x-auto whitespace-nowrap scrollbar-hide">
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Desktop</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Laptop</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Component</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Monitor</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">UPS</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Phone</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Tablet</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Office
+                            Equip</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Camera</a>
+                        <a href="#"
+                            class="py-3 hover:text-primary transition border-b-2 border-transparent hover:border-primary">Gaming</a>
+                        <!-- PC Builder removed -->
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div
+                class="p-4 rounded-md {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black text-gray-400 pt-16 pb-8 border-t border-gray-900">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+                <!-- Corporate -->
+                <div class="col-span-1 md:col-span-2">
+                    <a href="{% url 'home' %}" class="block mb-6">
+                        <span class="text-3xl font-extrabold text-white tracking-tighter italic">{{
+                            site_config.site_name }}</span>
+                    </a>
+                    <p class="text-sm leading-relaxed mb-6 max-w-sm">{{ site_config.site_description }}</p>
+                    <div class="flex space-x-4">
+                        <a href="{{ site_config.facebook_url }}"
+                            class="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary text-white transition"><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a href="{{ site_config.youtube_url }}"
+                            class="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary text-white transition"><i
+                                class="fab fa-youtube"></i></a>
+                        <a href="{{ site_config.instagram_url }}"
+                            class="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary text-white transition"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="{{ site_config.linkedin_url }}"
+                            class="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary text-white transition"><i
+                                class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div>
+                    <h3 class="text-white text-sm font-bold uppercase tracking-wider mb-6">About</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="hover:text-primary transition">About Us</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Store Locator</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Terms & Conditions</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Online Delivery</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Refund and Return</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Products -->
+                <div>
+                    <h3 class="text-white text-sm font-bold uppercase tracking-wider mb-6">Products</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="hover:text-primary transition">Laptops</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Desktop PCs</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Components</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Monitors</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Printers</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Cameras</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Security</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Networking</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Software</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Server & Storage</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Accessories</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h3 class="text-white text-sm font-bold uppercase tracking-wider mb-6">Contact</h3>
+                    <p class="text-sm mb-4"><strong class="block text-white mb-1">Head Office</strong> {{
+                        site_config.address }}</p>
+                    <p class="text-sm mb-4"><strong class="block text-white mb-1">Phone</strong> {{
+                        site_config.support_phone }}</p>
+                    <p class="text-sm mb-6"><strong class="block text-white mb-1">Email</strong> {{
+                        site_config.support_email }}</p>
+
+                    <button
+                        class="bg-primary text-white w-full py-2.5 rounded font-bold text-sm hover:bg-red-700 transition uppercase tracking-wide">
+                        Send Message
+                    </button>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
+                <p>{{ site_config.copyright_text }}</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <span class="text-gray-600">System by <span class="text-gray-400">MyEcom</span></span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

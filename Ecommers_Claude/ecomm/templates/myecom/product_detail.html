@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-12 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <!-- Product Images -->
+        <div class="space-y-4">
+            <!-- Main Image -->
+            <div class="relative overflow-hidden rounded-xl bg-gray-100 aspect-square group cursor-zoom-in">
+                {% if product.images.first %}
+                <img id="mainImage" src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
+                    class="w-full h-full object-contain transition duration-300 transform group-hover:scale-110">
+                {% else %}
+                <div class="flex items-center justify-center h-full text-gray-400">
+                    <i class="fas fa-image text-6xl"></i>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Thumbnails -->
+            <div class="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+                {% for image in product.images.all %}
+                <button onclick="changeImage('{{ image.image_url }}')"
+                    class="flex-shrink-0 w-20 h-20 rounded-lg border-2 border-transparent hover:border-primary focus:outline-none focus:border-primary transition">
+                    <img src="{{ image.image_url }}" alt="{{ product.name }}"
+                        class="w-full h-full object-cover rounded-md">
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="flex flex-col">
+            <nav class="text-sm text-gray-500 mb-4">
+                <a href="{% url 'home' %}" class="hover:text-primary">Home</a> /
+                <a href="{% url 'product_list' %}" class="hover:text-primary">Shop</a> /
+                <span class="text-gray-800 font-medium">{{ product.category.name }}</span>
+            </nav>
+
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
+
+            <div class="flex items-center space-x-4 mb-4">
+                <div class="flex text-yellow-400 text-sm">
+                    {% for i in "12345" %}
+                    <i
+                        class="{% if forloop.counter <= product.average_rating %}fas{% else %}far{% endif %} fa-star"></i>
+                    {% endfor %}
+                </div>
+                <span class="text-gray-500 text-sm">({{ product.total_reviews }} reviews)</span>
+                <span class="text-gray-300">|</span>
+                <span
+                    class="{% if product.stock_status == 'in_stock' %}text-green-600{% else %}text-red-500{% endif %} font-medium flex items-center">
+                    <i
+                        class="fas {% if product.stock_status == 'in_stock' %}fa-check-circle{% else %}fa-times-circle{% endif %} mr-1"></i>
+                    {{ product.get_stock_status_display }}
+                </span>
+            </div>
+
+            <div class="flex items-end space-x-4 mb-6">
+                <span class="text-4xl font-bold text-primary">${{ product.final_price|floatformat:2 }}</span>
+                {% if product.final_price < product.base_price %} <span class="text-xl text-gray-400 line-through">${{
+                    product.base_price }}</span>
+                    <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-bold">
+                        -{{ product.discount_value|floatformat:0 }}%
+                    </span>
+                    {% endif %}
+            </div>
+
+            <p class="text-gray-600 mb-8 leading-relaxed">
+                {{ product.short_description|default:product.description|truncatewords:30 }}
+            </p>
+
+            <!-- Variants -->
+            {% if product.variants.exists %}
+            <div class="mb-6">
+                <h3 class="font-medium text-gray-800 mb-3">Select Option:</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for variant in product.variants.all %}
+                    <label class="cursor-pointer">
+                        <input type="radio" name="variant" value="{{ variant.id }}" class="sr-only peer">
+                        <span
+                            class="px-4 py-2 border border-gray-200 rounded-lg peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:bg-gray-50 transition text-sm">
+                            {{ variant.variant_value }}
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quantity & Actions -->
+            <div class="flex items-center space-x-4 mb-8">
+                <div class="flex items-center border border-gray-300 rounded-lg">
+                    <button onclick="decrementQuantity()"
+                        class="px-3 py-2 text-gray-600 hover:text-primary focus:outline-none">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="quantity" value="1" min="1" max="10"
+                        class="w-12 text-center text-gray-800 font-medium border-none focus:ring-0 appearance-none bg-transparent">
+                    <button onclick="incrementQuantity()"
+                        class="px-3 py-2 text-gray-600 hover:text-primary focus:outline-none">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <button
+                    class="flex-1 bg-primary text-white text-lg font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 flex items-center justify-center">
+                    <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
+                </button>
+
+                <button
+                    class="bg-gray-100 text-gray-600 p-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition shadow-sm"
+                    title="Add to Wishlist">
+                    <i class="far fa-heart text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Meta Info -->
+            <div class="space-y-2 text-sm text-gray-500 border-t border-gray-100 pt-6">
+                <div class="flex">
+                    <span class="w-24 font-medium">SKU:</span>
+                    <span>{{ product.sku }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-24 font-medium">Category:</span>
+                    <a href="{% url 'product_list' %}?category={{ product.category.slug }}"
+                        class="text-primary hover:underline">{{ product.category.name }}</a>
+                </div>
+                {% if product.brand %}
+                <div class="flex">
+                    <span class="w-24 font-medium">Brand:</span>
+                    <a href="{% url 'product_list' %}?brand={{ product.brand.slug }}"
+                        class="text-primary hover:underline">{{ product.brand.name }}</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Social Share -->
+            <div class="flex space-x-4 mt-6">
+                <span class="text-sm font-medium text-gray-500">Share:</span>
+                <a href="#" class="text-gray-400 hover:text-blue-600"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-gray-400 hover:text-blue-400"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-gray-400 hover:text-pink-600"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-gray-400 hover:text-green-500"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs: Description, Reviews, Questions -->
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-12" x-data="{ tab: 'description' }">
+    <div class="border-b border-gray-100 px-6 sm:px-12">
+        <nav class="flex space-x-8" aria-label="Tabs">
+            <button class="border-b-2 py-4 px-1 text-sm font-medium text-primary border-primary">
+                Description
+            </button>
+            <button
+                class="border-b-2 py-4 px-1 text-sm font-medium text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300">
+                Reviews ({{ product.reviews.count }})
+            </button>
+            <button
+                class="border-b-2 py-4 px-1 text-sm font-medium text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300">
+                Q&A ({{ product.questions.count }})
+            </button>
+        </nav>
+    </div>
+
+    <div class="p-6 md:p-12">
+        <!-- Description Content -->
+        <div class="prose max-w-none text-gray-600">
+            {{ product.description|linebreaks }}
+
+            {% if product.specifications %}
+            <h3 class="text-gray-900 font-bold text-lg mt-8 mb-4">Specifications</h3>
+            <div class="overflow-hidden border border-gray-200 rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for key, value in product.specifications.items %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50 w-1/3">
+                                {{ key }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ value }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+<section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">You May Also Like</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        {% for related in related_products %}
+        <div
+            class="bg-white rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden border border-gray-100 group">
+            <div class="relative">
+                <a href="{% url 'product_detail' related.slug %}">
+                    {% if related.images.first %}
+                    <img src="{{ related.images.first.image_url }}" alt="{{ related.name }}"
+                        class="w-full h-48 object-cover group-hover:scale-105 transition duration-500">
+                    {% else %}
+                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-image text-gray-400 text-3xl"></i>
+                    </div>
+                    {% endif %}
+                </a>
+            </div>
+            <div class="p-4">
+                <p class="text-xs text-gray-500 mb-1">{{ related.category.name }}</p>
+                <a href="{% url 'product_detail' related.slug %}">
+                    <h3 class="font-semibold text-gray-800 hover:text-primary mb-2 truncate">{{ related.name }}</h3>
+                </a>
+                <p class="text-primary font-bold">${{ related.final_price|floatformat:2 }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function changeImage(src) {
+        document.getElementById('mainImage').src = src;
+    }
+
+    function incrementQuantity() {
+        var input = document.getElementById('quantity');
+        var value = parseInt(input.value);
+        if (value < 10) {
+            input.value = value + 1;
+        }
+    }
+
+    function decrementQuantity() {
+        var input = document.getElementById('quantity');
+        var value = parseInt(input.value);
+        if (value > 1) {
+            input.value = value - 1;
+        }
+    }
+</script>
+{% endblock %}

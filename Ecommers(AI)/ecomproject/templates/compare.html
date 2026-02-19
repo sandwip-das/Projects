@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Product Comparison</h1>
+
+    {% if products %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse table-fixed min-w-max">
+            <thead>
+                <tr>
+                    <th class="w-48 bg-gray-50 border p-4 text-gray-500 font-medium">Features</th>
+                    {% for product in products %}
+                    <th class="w-64 border p-4 text-center relative group">
+                        <a href="{% url 'remove_from_compare' product.id %}"
+                            class="absolute top-2 right-2 text-red-400 hover:text-red-600 focus:outline-none"
+                            title="Remove">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        <div class="h-32 mb-4 flex items-center justify-center">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="h-full object-contain">
+                            {% else %}
+                            <div class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300"><i
+                                    class="fas fa-image text-3xl"></i></div>
+                            {% endif %}
+                        </div>
+                        <h3 class="font-bold text-gray-800 text-lg mb-2"><a
+                                href="{% url 'product_detail' product.slug %}" class="hover:text-indigo-600">{{
+                                product.title }}</a></h3>
+                        <p class="text-indigo-600 font-bold text-xl">${{ product.price }}</p>
+                        <form action="{% url 'add_to_cart' product.id %}" method="POST" class="mt-4">
+                            {% csrf_token %}
+                            <button
+                                class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition font-bold shadow text-sm">Add
+                                to Cart</button>
+                        </form>
+                    </th>
+                    {% endfor %}
+
+                    {% for i in "1234"|make_list %}
+                    {% if forloop.counter > products.count %}
+                    <th class="w-64 border p-4 text-center bg-gray-50 text-gray-400">
+                        <div class="h-32 flex items-center justify-center mb-4">
+                            <i class="fas fa-plus text-4xl"></i>
+                        </div>
+                        <p class="font-medium">Add Product</p>
+                    </th>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bg-gray-50 border p-4 font-semibold text-gray-700">Category</td>
+                    {% for product in products %}
+                    <td class="border p-4 text-center">{{ product.category.name }}</td>
+                    {% endfor %}
+                    {% for i in "1234"|make_list %}
+                    {% if forloop.counter > products.count %}<td class="border p-4 bg-gray-50"></td>{% endif %}
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td class="bg-gray-50 border p-4 font-semibold text-gray-700">Brand</td>
+                    {% for product in products %}
+                    <td class="border p-4 text-center">{{ product.brand.name|default:"-" }}</td>
+                    {% endfor %}
+                    {% for i in "1234"|make_list %}
+                    {% if forloop.counter > products.count %}<td class="border p-4 bg-gray-50"></td>{% endif %}
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td class="bg-gray-50 border p-4 font-semibold text-gray-700">Rating</td>
+                    {% for product in products %}
+                    <td class="border p-4 text-center">
+                        <div class="flex justify-center text-yellow-400 text-xs">
+                            {% for i in "xxxxx" %}
+                            <i
+                                class="fas fa-star {% if forloop.counter <= product.average_rating %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    {% endfor %}
+                    {% for i in "1234"|make_list %}
+                    {% if forloop.counter > products.count %}<td class="border p-4 bg-gray-50"></td>{% endif %}
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td class="bg-gray-50 border p-4 font-semibold text-gray-700">Availability</td>
+                    {% for product in products %}
+                    <td class="border p-4 text-center">
+                        {% if product.stock > 0 %}
+                        <span class="text-green-600 font-bold">In Stock</span>
+                        {% else %}
+                        <span class="text-red-500 font-bold">Out of Stock</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    {% for i in "1234"|make_list %}
+                    {% if forloop.counter > products.count %}<td class="border p-4 bg-gray-50"></td>{% endif %}
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td class="bg-gray-50 border p-4 font-semibold text-gray-700">Description</td>
+                    {% for product in products %}
+                    <td class="border p-4 text-sm text-gray-600">{{ product.description|truncatewords:20 }}</td>
+                    {% endfor %}
+                    {% for i in "1234"|make_list %}
+                    {% if forloop.counter > products.count %}<td class="border p-4 bg-gray-50"></td>{% endif %}
+                    {% endfor %}
+                </tr>
+                <!-- Dynamic Features -->
+                <tr>
+                    <td class="bg-gray-50 border p-4 font-semibold text-gray-700">Weight</td>
+                    {% for product in products %}
+                    <td class="border p-4 text-center">{{ product.weight|default:"-" }}</td>
+                    {% endfor %}
+                    {% for i in "1234"|make_list %}
+                    {% if forloop.counter > products.count %}<td class="border p-4 bg-gray-50"></td>{% endif %}
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td class="bg-gray-50 border p-4 font-semibold text-gray-700">Capacity</td>
+                    {% for product in products %}
+                    <td class="border p-4 text-center">{{ product.capacity|default:"-" }}</td>
+                    {% endfor %}
+                    {% for i in "1234"|make_list %}
+                    {% if forloop.counter > products.count %}<td class="border p-4 bg-gray-50"></td>{% endif %}
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-8 text-center">
+        <a href="{% url 'clear_compare' %}" class="text-red-500 font-bold hover:underline">Clear Comparison</a>
+        <a href="{% url 'shop' %}"
+            class="ml-6 bg-indigo-600 text-white px-8 py-3 rounded-full hover:bg-indigo-700 transition font-bold shadow-lg">Add
+            More Products</a>
+    </div>
+
+    {% else %}
+    <div class="text-center py-24 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+        <i class="fas fa-balance-scale text-6xl text-gray-300 mb-6"></i>
+        <h2 class="text-2xl font-bold text-gray-500 mb-4">No products to compare</h2>
+        <p class="text-gray-400 mb-8">Add products to the comparison list to see their differences.</p>
+        <a href="{% url 'shop' %}"
+            class="bg-indigo-600 text-white px-8 py-3 rounded-full hover:bg-indigo-700 transition font-bold shadow-lg">Start
+            Comparing</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

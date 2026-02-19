@@ -1,0 +1,66 @@
+{% extends 'myecom/dashboard/base_dashboard.html' %}
+
+{% block dashboard_content %}
+<div class="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-gray-800">Edit Profile</h2>
+        <span class="text-sm text-gray-500">Update your personal information</span>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        {% if form.errors %}
+            <div class="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100">
+                <ul class="list-disc list-inside text-sm">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- First Name -->
+            <div>
+                <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                {{ form.first_name }}
+            </div>
+            <!-- Last Name -->
+            <div>
+                <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                {{ form.last_name }}
+            </div>
+             <!-- Phone -->
+             <div>
+                <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                {{ form.phone }}
+            </div>
+             <!-- DOB -->
+             <div>
+                <label for="{{ form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                {{ form.date_of_birth }}
+            </div>
+             <!-- Gender -->
+             <div>
+                <label for="{{ form.gender.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                {{ form.gender }}
+            </div>
+             <!-- Profile Image URL -->
+             <div class="md:col-span-2">
+                <label for="{{ form.profile_image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Profile Image URL</label>
+                {{ form.profile_image }}
+                <p class="text-xs text-gray-400 mt-1">Paste a URL for your profile picture.</p>
+            </div>
+        </div>
+
+        <div class="flex justify-end pt-6 border-t border-gray-100 mt-6">
+            <button type="submit" class="bg-primary hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

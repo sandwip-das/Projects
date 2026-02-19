@@ -1,0 +1,58 @@
+{% extends 'myecom/dashboard/base_dashboard.html' %}
+
+{% block dashboard_content %}
+<div class="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-gray-800">My Addresses</h2>
+        <a href="#"
+            class="inline-flex items-center px-4 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+            <i class="fas fa-plus mr-2"></i> Add Address
+        </a>
+    </div>
+
+    {% if addresses %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for address in addresses %}
+        <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-4">
+                <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {{ address.get_address_type_display }}
+                </span>
+                {% if address.is_default_shipping %}
+                <span class="text-xs text-green-600 font-semibold uppercase tracking-wide">Default Shipping</span>
+                {% endif %}
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-900 mb-2">{{ address.full_name }}</h3>
+            <p class="text-sm text-gray-500 mb-1">{{ address.address_line1 }}</p>
+            {% if address.address_line2 %}
+            <p class="text-sm text-gray-500 mb-1">{{ address.address_line2 }}</p>
+            {% endif %}
+            <p class="text-sm text-gray-500 mb-1">{{ address.city }}, {{ address.state }} {{ address.postal_code }}</p>
+            <p class="text-sm text-gray-500 mb-3">{{ address.country }}</p>
+            <p class="text-sm text-gray-500"><i class="fas fa-phone mr-2 text-gray-400"></i>{{ address.phone }}</p>
+
+            <div class="flex items-center justify-end mt-4 space-x-2">
+                <button class="text-gray-400 hover:text-blue-500 transition tooltip" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="text-gray-400 hover:text-red-500 transition tooltip" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <div
+            class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 text-2xl">
+            <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900">No addresses saved</h3>
+        <p class="mt-2 text-gray-500">Add a shipping address for faster checkout.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

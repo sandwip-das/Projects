@@ -1,0 +1,48 @@
+/* Custom CSS - Merged */
+
+body {
+    font-family: 'Raleway', sans-serif;
+}
+
+.gradient-text {
+    background: linear-gradient(to right, #f97316, #ec4899);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.glass-card {
+    background: rgba(30, 41, 59, 0.7);
+    /* Dark Mode Background */
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Nav Link Hover Effect */
+.nav-link {
+    position: relative;
+    color: #e2e8f0;
+    /* text-gray-200 */
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #f97316;
+    /* text-primary */
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to right, #f97316, #ec4899);
+    /* Orange to Pink */
+    transition: width 0.3s ease-in-out;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
