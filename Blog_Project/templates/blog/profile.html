@@ -12,15 +12,14 @@
                     <div class="row mb-3 pb-3 border-bottom align-items-center">
                         <div class="col-auto">
                             <!-- Profile Picture on Left -->
-                            {% if user.profile.profile_picture %}
-                            <img src="{{ user.profile.profile_picture.url }}"
-                                class="profile-picture-main-left rounded-circle shadow-sm" alt="{{ user.username }}">
-                            {% else %}
-                            <div
-                                class="profile-picture-main-left-placeholder rounded-circle shadow-sm d-flex align-items-center justify-content-center">
-                                <span class="profile-initial-main"></span>
+                            <div class="profile-avatar profile-avatar-lg shadow-sm">
+                                {% if user.profile.profile_picture %}
+                                <img src="{{ user.profile.profile_picture.url }}" class="w-100 h-100 rounded-circle"
+                                    alt="{{ user.username }}">
+                                {% else %}
+                                <span>{{ user.username|make_list|first|upper }}</span>
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
                         <div class="col">
                             <!-- Full Name -->

@@ -86,13 +86,11 @@
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center p-0" href="#" role="button"
                             data-bs-toggle="dropdown">
-                            <div class="rounded-circle bg-gradient ms-2 d-flex align-items-center justify-content-center overflow-hidden border border-2 border-primary shadow-sm"
-                                style="width: 40px; height: 40px;">
+                            <div class="profile-avatar profile-avatar-xs ms-2 shadow-sm">
                                 {% if user.profile.profile_picture %}
-                                <img src="{{ user.profile.profile_picture.url }}" class="w-100 h-100"
-                                    style="object-fit:cover;">
+                                <img src="{{ user.profile.profile_picture.url }}" class="w-100 h-100 rounded-circle">
                                 {% else %}
-                                <span class="text-white fw-bold">{{ user.username|make_list|first|upper }}</span>
+                                <span>{{ user.username|make_list|first|upper }}</span>
                                 {% endif %}
                             </div>
                         </a>

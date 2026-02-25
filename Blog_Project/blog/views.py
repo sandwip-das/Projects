@@ -1,20 +1,24 @@
+import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from django.utils.timesince import timesince
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.db.models import Q, Count, Sum
-from django.contrib.auth.models import User
-from .models import Post, Category, Tag, Profile, Comment, PostInteraction, HomeContent, ImportantLink, PostEditHistory
-from .forms import ProfileForm, CommentForm, ContactForm, UserUpdateForm, PostForm
+from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import JsonResponse, Http404
+from django.template.loader import render_to_string
 
+from .models import Post, Category, Tag, Profile, Comment, PostInteraction, HomeContent, ImportantLink, PostEditHistory
+from .forms import ProfileForm, CommentForm, ContactForm, UserUpdateForm, PostForm
 
 # Helper for Role-Based Permissions
-def is_editor_check(user):
+def is_editor(user):
     return user.is_authenticated and (user.is_superuser or user.groups.filter(name='Editor').exists())
 
 def home(request):
@@ -49,7 +53,6 @@ def post_detail(request, slug):
     
     # Restrict Drafts
     if post.status == 'draft' and request.user != post.author and not request.user.is_superuser:
-        from django.http import Http404
         raise Http404("Post not found")
     
     post.views_count += 1
@@ -124,31 +127,11 @@ def contact_us(request):
             return redirect('home')
     return redirect('home')
 
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-
-# ... (Previous imports kept implicitly by context matching, but adding JsonResponse)
-
-# Note: Ideally we should add JsonResponse to the imports at top, but for this editing tool, 
-# I will rewrite the relevant views and assume top-level imports are handled or I will add them if I can.
-# Actually, I'll just rewrite the views down here and risk the import error? 
-# No, I must ensure valid python. I'll simply add the import line at the top if I could, but I can't jump around.
-# I will use 'from django.http import JsonResponse' inside the function if needed, or hope it's there? 
-# It's not there. I will modify the top of the file separately? 
-# No, I will modify the Functions to import inside them or use the replace tool to swap the top imports first.
-# Wait, I can just replace the functions. I'll add the import inside the functions for safety 
-# or Replace the whole file content for imports? No, too large.
-# use 'from django.http import JsonResponse' inside the view functions.
-
 @login_required
 def post_interaction(request, slug):
-    from django.http import JsonResponse
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.accepts('application/json')
-    
     post = get_object_or_404(Post, slug=slug)
-    # Handle AJAX for cleaner UI
     if is_ajax and request.method == 'POST':
-        import json
         try:
             data = json.loads(request.body)
             interaction_type = data.get('interaction_type')
@@ -206,7 +189,6 @@ def post_interaction(request, slug):
 
 @login_required
 def add_comment(request, slug):
-    from django.http import JsonResponse
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
     post = get_object_or_404(Post, slug=slug)
     
@@ -226,11 +208,6 @@ def add_comment(request, slug):
             comment.save()
             
             if is_ajax:
-                # Return the rendered HTML for the new comment to append via JS
-                # Constructing a simple dictionary of data is easier, or rendering a partial.
-                # Since we are inline, let's just return data and let JS build it, OR render a small template.
-                # simpler: Just return data.
-                from django.utils.timesince import timesince
                 return JsonResponse({
                     'message': 'Comment added!',
                     'count': post.comments.filter(active=True, parent__isnull=True).count(),
@@ -250,7 +227,7 @@ def add_comment(request, slug):
 
 @login_required
 def dashboard(request):
-    if not is_editor_check(request.user):
+    if not is_editor(request.user):
         messages.error(request, "Access restricted to staff/editors.")
         return redirect('home')
         
@@ -343,7 +320,7 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
         
     def test_func(self):
-        return is_editor_check(self.request.user)
+        return is_editor(self.request.user)
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
@@ -352,7 +329,6 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     
     def form_valid(self, form):
         # Always update the last_edited fields to track the latest modification
-        from django.utils import timezone
         form.instance.last_edited_by = self.request.user
         form.instance.last_edited_at = timezone.now()
         response = super().form_valid(form)
@@ -367,7 +343,7 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         # Editors can edit their own posts and strictly permissioned editors can edit others.
         # Since 'Editor' group has change_post, this covers both.
-        return is_editor_check(self.request.user)
+        return is_editor(self.request.user)
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
@@ -375,12 +351,10 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     template_name = 'blog/post_confirm_delete.html'
     
     def test_func(self):
-        return is_editor_check(self.request.user)
+        return is_editor(self.request.user)
 
 @login_required
 def comment_edit(request, pk):
-    from django.http import JsonResponse
-    import json
     comment = get_object_or_404(Comment, pk=pk)
     
     # Permissions
@@ -416,7 +390,6 @@ def comment_edit(request, pk):
 
 @login_required
 def comment_delete(request, pk):
-    from django.http import JsonResponse
     comment = get_object_or_404(Comment, pk=pk)
     
     # Permissions
