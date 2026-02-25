@@ -1,5 +1,5 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html lang="en" data-theme="dark">
 
 <head>
@@ -19,6 +19,12 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     {% block extra_head %}{% endblock %}
+    <script>
+        (function () {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 </head>
 
 <body>
@@ -128,6 +134,28 @@
             </div>
         </div>
     </nav>
+    <script>
+        (function () {
+            const toggleBtn = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            if (!toggleBtn) return;
+            const icon = toggleBtn.querySelector('i');
+            if (html.getAttribute('data-theme') === 'light') {
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+            toggleBtn.addEventListener('click', () => {
+                const isDark = html.getAttribute('data-theme') === 'dark';
+                const newTheme = isDark ? 'light' : 'dark';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                if (newTheme === 'light') {
+                    icon.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    icon.classList.replace('fa-sun', 'fa-moon');
+                }
+            });
+        })();
+    </script>
 
     <!-- Messages (Toast Style) -->
     {% if messages %}
@@ -317,33 +345,6 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const toggleBtn = document.getElementById('themeToggle');
-        const icon = toggleBtn.querySelector('i');
-        const html = document.documentElement;
-
-        if (localStorage.getItem('theme') === 'light') {
-            html.setAttribute('data-theme', 'light');
-            icon.classList.remove('fa-moon');
-            icon.classList.add('fa-sun');
-        } else {
-            html.setAttribute('data-theme', 'dark');
-        }
-
-        toggleBtn.addEventListener('click', () => {
-            if (html.getAttribute('data-theme') === 'dark') {
-                html.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                html.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
-    </script>
 </body>
 
 </html>
