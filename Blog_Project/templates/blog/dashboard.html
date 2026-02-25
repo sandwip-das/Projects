@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-2">
+    <style>
+        /* Dashboard Tabs Styling */
+        .nav-pills .nav-link {
+            transition: all 0.3s ease;
+        }
+
+        /* Active State: Green, White Text */
+        .nav-pills .nav-link.active {
+            background: #4cd137 !important;
+            color: white !important;
+            box-shadow: 0 4px 6px rgba(76, 209, 55, 0.3);
+        }
+
+        /* Non-Active Hover: Solid Green BG, White Text */
+        .nav-pills .nav-link:not(.active):hover {
+            background-color: #4cd137 !important;
+            color: white !important;
+            transform: translateY(-1px);
+        }
+
+        /* Badge Styling in Active State */
+        .nav-pills .nav-link.active .badge {
+            background-color: rgba(255, 255, 255, 0.25) !important;
+            color: white !important;
+        }
+
+        /* Badge Styling on Hover (Non-Active) */
+        .nav-pills .nav-link:not(.active):hover .badge {
+            background-color: white !important;
+            color: #4cd137 !important;
+        }
+
+        .text-deep-orange {
+            color: #D84315 !important;
+        }
+
+        .text-black {
+            color: #000000 !important;
+        }
+
+        .stats-item {
+            width: 22%;
+        }
+
+        .table-black-border,
+        .table-black-border th,
+        .table-black-border td {
+            border: 1px solid black !important;
+        }
+
+        /* Modern Interactive Table Design */
+        .modern-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .modern-table thead tr {
+            background: transparent !important;
+            /* Let th control color */
+        }
+
+        .modern-table thead th {
+            background-color: #2ed573 !important;
+            /* Solid Green */
+            color: #fff;
+            box-shadow: inset 0 0 0 9999px #2ed573 !important;
+            /* Bootstrap override */
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 16px;
+            border-bottom: none !important;
+            vertical-align: middle;
+        }
+
+        .modern-table tbody tr {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease;
+        }
+
+        /* Odd Rows - Ocean Blue (Applied to cells to ensure visibility) */
+        .modern-table tbody tr:nth-child(odd) td {
+            background-color: #e0f7fa !important;
+            box-shadow: inset 0 0 0 9999px #e0f7fa !important;
+            /* Bootstrap accent override */
+        }
+
+
+
+        /* Hover Effect - White with Shadow */
+        .modern-table tbody tr:hover {
+            transform: scale(1.01);
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .modern-table tbody tr:hover td {
+            background-color: #fff !important;
+            box-shadow: inset 0 0 0 9999px #fff !important;
+        }
+
+        .modern-table thead th {
+            padding: 8px 8px !important;
+            /* Reduced Header Padding */
+            font-size: 0.8rem;
+        }
+
+        .modern-table tbody td {
+            padding: 4px 8px !important;
+            /* Drastically Reduced Row Padding */
+            vertical-align: middle;
+            color: #333;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        /* Interactive Action Buttons inside Table */
+        .modern-table .btn {
+            transition: all 0.2s ease;
+        }
+
+        .modern-table .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+
+    <h2 class="mb-2 fw-bold" style="color: #574b90;">Dashboard</h2>
+    {% if user.is_superuser %}
+    <h5 class="fw-bold mb-3" style="color: #218c74;">Dashboard for Admins</h5>
+    <div class="row g-3 mb-4">
+        <!-- Combined Stats Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow h-100 text-white" style="background: #EE5A24 !important;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2 pb-1 border-bottom border-white border-opacity-25">
+                        <div class="rounded-circle bg-white text-danger d-flex align-items-center justify-content-center me-3"
+                            style="width: 40px; height: 40px;">
+                            <i class="fas fa-blog fs-5"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-0">My Blog</h5>
+                        <span class="badge bg-white text-dark ms-auto">All</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-center">
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Posts</h6>
+                            <span class="fw-bold fs-5 text-black">{{ combined_stats.total_posts }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Views</h6>
+                            <span class="fw-bold fs-5 text-black">{{ combined_stats.total_views }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Likes</h6>
+                            <span class="fw-bold fs-5 text-black">{{ combined_stats.total_likes }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Comms</h6>
+                            <span class="fw-bold fs-5 text-black">{{ combined_stats.total_comments }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% for editor in admin_stats %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow h-100 text-white" style="background: #ff6b81 !important;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2 pb-1 border-bottom border-white border-opacity-25">
+                        {% if editor.user.profile.profile_picture %}
+                        <img src="{{ editor.user.profile.profile_picture.url }}"
+                            class="rounded-circle me-3 border border-2 border-white" width="40" height="40"
+                            style="object-fit:cover;">
+                        {% else %}
+                        <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center me-3"
+                            style="width: 40px; height: 40px;">
+                            <span class="fw-bold">{{ editor.user.username|make_list|first|upper }}</span>
+                        </div>
+                        {% endif %}
+                        <h5 class="fw-bold text-white mb-0">{{ editor.user.username }}</h5>
+                        <span class="badge bg-white text-dark ms-auto">Admin</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-center">
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Posts</h6>
+                            <span class="fw-bold fs-5 text-black">{{ editor.total_posts }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Views</h6>
+                            <span class="fw-bold fs-5 text-black">{{ editor.total_views }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Likes</h6>
+                            <span class="fw-bold fs-5 text-black">{{ editor.total_likes }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Comms</h6>
+                            <span class="fw-bold fs-5 text-black">{{ editor.total_comments }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h5 class="fw-bold mb-3" style="color: #218c74;">Dashboard for Editors</h5>
+    <div class="row g-3 mb-3">
+        {% for editor in editor_stats %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow h-100 text-white" style="background: #12CBC4 !important;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2 pb-1 border-bottom border-white border-opacity-25">
+                        {% if editor.user.profile.profile_picture %}
+                        <img src="{{ editor.user.profile.profile_picture.url }}"
+                            class="rounded-circle me-3 border border-2 border-white" width="40" height="40"
+                            style="object-fit:cover;">
+                        {% else %}
+                        <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center me-3"
+                            style="width: 40px; height: 40px;">
+                            <span class="fw-bold">{{ editor.user.username|make_list|first|upper }}</span>
+                        </div>
+                        {% endif %}
+                        <h5 class="fw-bold text-white mb-0">{{ editor.user.username }}</h5>
+                        <span class="badge bg-white text-dark bg-opacity-75 ms-auto">Editor</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-center">
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Posts</h6>
+                            <span class="fw-bold fs-5 text-black">{{ editor.total_posts }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Views</h6>
+                            <span class="fw-bold fs-5 text-black">{{ editor.total_views }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Likes</h6>
+                            <span class="fw-bold fs-5 text-black">{{ editor.total_likes }}</span>
+                        </div>
+                        <div class="vr bg-white opacity-50"></div>
+                        <div class="stats-item">
+                            <h6 class="text-white fw-bold small mb-1">Comms</h6>
+                            <span class="fw-bold fs-5 text-black">{{ editor.total_comments }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="row g-3 mb-3">
+        <!-- Single Card for Logged-in Editor -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow h-100"
+                style="background: linear-gradient(135deg, #ffffff, #f8f9fa); border-left: 5px solid var(--bs-success) !important;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2 pb-1 border-bottom">
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
+                            style="width: 40px; height: 40px;">
+                            {{ user.username|make_list|first|upper }}
+                        </div>
+                        <h5 class="fw-bold text-success mb-0">{{ user.username }}</h5>
+                        <span class="badge bg-secondary ms-auto">Me</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-center">
+                        <div class="stats-item">
+                            <h6 class="text-secondary fw-bold small mb-1">Posts</h6>
+                            <span class="fw-bold fs-5 text-black">{{ total_posts }}</span>
+                        </div>
+                        <div class="vr opacity-25"></div>
+                        <div class="stats-item">
+                            <h6 class="text-secondary fw-bold small mb-1">Views</h6>
+                            <span class="fw-bold fs-5 text-black">{{ total_views }}</span>
+                        </div>
+                        <div class="vr opacity-25"></div>
+                        <div class="stats-item">
+                            <h6 class="text-secondary fw-bold small mb-1">Likes</h6>
+                            <span class="fw-bold fs-5 text-black">{{ total_likes }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dashboard Tabs -->
+    <ul class="nav nav-pills mb-2 gap-2" id="dashboardTabs" role="tablist">
+        {% if user.is_superuser %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold rounded-pill" id="all-published-tab" data-bs-toggle="pill"
+                data-bs-target="#all-published" type="button" role="tab" aria-selected="false">
+                <i class="fas fa-globe me-2"></i>All Published Posts
+            </button>
+        </li>
+        {% endif %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold rounded-pill" id="published-tab" data-bs-toggle="pill"
+                data-bs-target="#published" type="button" role="tab">
+                <i class="fas fa-check-circle me-2"></i>My Published
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold rounded-pill" id="drafts-tab" data-bs-toggle="pill" data-bs-target="#drafts"
+                type="button" role="tab">
+                <i class="fas fa-pencil-ruler me-2"></i>My Drafts
+                <span class="badge bg-secondary ms-1 rounded-pill">{{ draft_count }}</span>
+            </button>
+        </li>
+        {% if admin_drafts %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold rounded-pill btn-outline-danger" id="all-drafts-tab" data-bs-toggle="pill"
+                data-bs-target="#all-drafts" type="button" role="tab">
+                <i class="fas fa-user-shield me-2"></i>Review Queue
+                <span class="badge bg-danger ms-1 rounded-pill">{{ admin_draft_count }}</span>
+            </button>
+        </li>
+        {% endif %}
+        {% if user.is_superuser %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold rounded-pill" id="editor-tab" data-bs-toggle="pill" data-bs-target="#editor"
+                type="button" role="tab">
+                <i class="fas fa-edit me-2"></i>Editor
+            </button>
+        </li>
+        {% endif %}
+    </ul>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="tab-content" id="dashboardTabsContent">
+
+                <!-- All Published Tab (New) -->
+                {% if user.is_superuser %}
+                <div class="tab-pane fade" id="all-published" role="tabpanel">
+                    <div class="table-responsive">
+                        <table
+                            class="table table-hover align-middle table-sm text-center table-black-border table-bordered modern-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Viewers</th>
+                                    <th>Like</th>
+                                    <th>Comments</th>
+                                    <th>Actions</th>
+                                    <th>Author</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in all_published_posts %}
+                                <tr>
+                                    <td class="fw-bold text-start" style="max-width: 200px;">
+                                        {{ post.title|truncatewords:5 }}
+                                    </td>
+                                    <td class="small">{{ post.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ post.views_count }}</td>
+                                    <td>{{ post.total_likes }}</td>
+                                    <td>{{ post.total_comments }}</td>
+                                    <td>
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            <a href="{{ post.get_absolute_url }}" class="btn btn-sm btn-outline-primary"
+                                                title="View"><i class="fas fa-eye"></i></a>
+                                            <a href="{% url 'post_update' post.slug %}"
+                                                class="btn btn-sm btn-outline-secondary" title="Edit"><i
+                                                    class="fas fa-edit"></i></a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary rounded-pill">
+                                            {{ post.author.username }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No published posts found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Published Tab -->
+                <div class="tab-pane fade show active" id="published" role="tabpanel">
+                    <div class="table-responsive">
+                        <table
+                            class="table table-hover align-middle table-sm text-center table-black-border table-bordered modern-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Views</th>
+                                    <th>Like</th>
+                                    <th>Comments</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in my_published %}
+                                <tr>
+                                    <td class="fw-bold text-start">{{ post.title|truncatewords:5 }}</td>
+                                    <td>{{ post.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ post.views_count }}</td>
+                                    <td>{{ post.total_likes }}</td>
+                                    <td>{{ post.total_comments }}</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ post.get_absolute_url }}" class="btn btn-sm btn-outline-primary"
+                                                title="View"><i class="fas fa-eye"></i></a>
+                                            <a href="{% url 'post_update' post.slug %}"
+                                                class="btn btn-sm btn-outline-secondary" title="Edit"><i
+                                                    class="fas fa-edit"></i></a>
+                                            <a href="{% url 'post_delete' post.slug %}"
+                                                class="btn btn-sm btn-outline-danger" title="Delete"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No published posts yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- My Drafts Tab -->
+                <div class="tab-pane fade" id="drafts" role="tabpanel">
+                    <div class="table-responsive">
+                        <table
+                            class="table table-hover align-middle table-sm text-center table-black-border table-bordered modern-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Last Updated</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in my_drafts %}
+                                <tr>
+                                    <td class="fw-bold text-start">{{ post.title|truncatewords:5 }}</td>
+                                    <td>{{ post.updated_at|timesince }} ago</td>
+                                    <td><span class="badge bg-warning text-dark">Draft</span></td>
+                                    <td>
+                                        <a href="{% url 'post_update' post.slug %}"
+                                            class="btn btn-sm btn-primary rounded-pill px-3">Edit/Publish</a>
+                                        <a href="{% url 'post_delete' post.slug %}"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No active drafts.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Queue Tab -->
+                {% if admin_drafts %}
+                <div class="tab-pane fade" id="all-drafts" role="tabpanel">
+                    <div class="table-responsive">
+                        <table
+                            class="table table-hover align-middle table-sm text-center table-black-border table-bordered modern-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in admin_drafts %}
+                                <tr>
+                                    <td class="fw-bold text-start">{{ post.title|truncatewords:5 }}</td>
+                                    <td>
+                                        <span class="badge bg-info text-dark rounded-pill">
+                                            {{ post.author.username }}
+                                        </span>
+                                    </td>
+                                    <td>{{ post.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{{ post.get_absolute_url }}"
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-3">Preview</a>
+                                        <a href="{% url 'post_update' post.slug %}"
+                                            class="btn btn-sm btn-success rounded-pill px-3">Review</a>
+                                        <a href="{% url 'post_delete' post.slug %}"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Queue is clear.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Editor Tab (Superuser All Posts) -->
+                {% if user.is_superuser %}
+                <div class="tab-pane fade" id="editor" role="tabpanel">
+                    <div class="table-responsive">
+                        <table
+                            class="table table-hover align-middle table-sm text-center table-black-border table-bordered modern-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Viewers</th>
+                                    <th>Like</th>
+                                    <th>Comments</th>
+                                    <th>Actions</th>
+                                    <th>Editor Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in all_posts %}
+                                <tr>
+                                    <td class="fw-bold text-wrap text-start" style="max-width: 200px;">
+                                        {{ post.title|truncatewords:5 }}
+                                        {% if post.status == 'draft' %}
+                                        <span class="badge bg-warning text-dark ms-1">Draft</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small">{{ post.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ post.views_count }}</td>
+                                    <td>{{ post.total_likes }}</td>
+                                    <td>{{ post.total_comments }}</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ post.get_absolute_url }}" class="btn btn-sm btn-outline-primary"
+                                                title="View"><i class="fas fa-eye"></i></a>
+                                            <a href="{% url 'post_update' post.slug %}"
+                                                class="btn btn-sm btn-outline-secondary" title="Edit"><i
+                                                    class="fas fa-edit"></i></a>
+                                            <a href="{% url 'post_delete' post.slug %}"
+                                                class="btn btn-sm btn-outline-danger" title="Delete"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if post.author.profile.profile_picture %}
+                                            <img src="{{ post.author.profile.profile_picture.url }}"
+                                                class="rounded-circle me-2" width="25" height="25"
+                                                style="object-fit:cover;">
+                                            {% else %}
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
+                                                style="width: 25px; height: 25px; font-size: 0.7rem;">
+                                                {{ post.author.username|make_list|first|upper }}
+                                            </div>
+                                            {% endif %}
+                                            <span class="fw-semibold small">{{ post.author.username }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No posts found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

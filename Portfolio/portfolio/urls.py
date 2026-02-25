@@ -2,16 +2,29 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import home, blog_detail
+from core.views import home, blog_detail, custom_signup, verify_registration
+
+# Admin Customization
+admin.site.site_header = "My Portfolio administration"
+admin.site.site_title = "My Portfolio administration"
+admin.site.index_title = "Welcome to My Portfolio administration"
 
 urlpatterns = [
-    # path('headers/', include('core.urls')), 
     path('admin/', admin.site.urls),
-    path('accounts/', include('allauth.urls')),
 
     path('', home, name='home'),
     path('blog/<slug:slug>/', blog_detail, name='blog_detail'),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('_nested_admin/', include('nested_admin.urls')),
+    
+    # Custom Auth Overrides
+    path('accounts/signup/', include([
+        path('', custom_signup, name='account_signup'),
+    ])),
+    path('accounts/verify/<str:token>/', verify_registration, name='verify_registration'),
+    
+    path('accounts/', include('allauth.urls')),
+    path('core/', include('core.urls')),
 ]
 
 if settings.DEBUG:

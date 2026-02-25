@@ -1,0 +1,16 @@
+<li>
+    <a class="dropdown-item d-flex justify-content-between align-items-center"
+        href="{% url 'category_posts' category.slug %}">
+        {{ category.name }}
+        {% if category.children.exists %}
+        <i class="fas fa-chevron-right small text-muted"></i>
+        {% endif %}
+    </a>
+    {% if category.children.exists %}
+    <ul class="submenu dropdown-menu">
+        {% for child in category.children.all %}
+        {% include "includes/category_recursion.html" with category=child %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+</li>

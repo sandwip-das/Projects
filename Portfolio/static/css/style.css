@@ -46,3 +46,27 @@ body {
 .nav-link:hover::after {
     width: 100%;
 }
+
+/* Hide native datepicker placeholders when empty */
+input[type="date"] {
+    color: transparent;
+}
+
+input[type="date"]:valid,
+input[type="date"]:focus {
+    color: inherit;
+}
+
+/* Universal Interactive Animations for Icons */
+a:hover i.fas, a:hover i.fab, a:hover i.far,
+button:hover i.fas, button:hover i.fab, button:hover i.far,
+button:hover svg, a:hover svg {
+    transform: scale(1.15) translateY(-2px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+a:active i.fas, a:active i.fab, a:active i.far,
+button:active i.fas, button:active i.fab, button:active i.far,
+button:active svg, a:active svg {
+    transform: scale(0.95) translateY(0);
+}

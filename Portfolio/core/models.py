@@ -1,8 +1,79 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from ckeditor.fields import RichTextField
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
+
+from django.core.cache import cache
+import random
+
+from allauth.account.signals import user_signed_up
+from django.dispatch import receiver
+
+class UserManagement(User):
+    class Meta:
+        proxy = True
+        verbose_name = 'User Management'
+        verbose_name_plural = 'User Management'
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    profile_picture = models.ImageField(upload_to='profiles/', default='default_profile.png', blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    profession = models.CharField(max_length=100, blank=True, null=True)
+    interest_field = models.CharField(max_length=100, blank=True, null=True)
+    highest_degree = models.CharField(max_length=100, blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+@receiver(user_signed_up)
+def populate_profile(request, user, **kwargs):
+    profile, created = UserProfile.objects.get_or_create(user=user)
+    
+    if 'full_name' in request.POST:
+        full_name = request.POST['full_name'].strip()
+        # username: replace spaces with hyphens, limit to first 2 words
+        words = full_name.split()
+        formatted_username = "-".join(words[:2])
+        user.username = formatted_username
+        user.save()
+        
+    if request.FILES.get('profile_picture'):
+        profile.profile_picture = request.FILES['profile_picture']
+        profile.save()
+
+from django.db.models.signals import post_save
+
+@receiver(post_save, sender=User)
+def create_or_save_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
+    else:
+        try:
+            instance.profile.save()
+        except UserProfile.DoesNotExist:
+            UserProfile.objects.create(user=instance)
+
+class PendingRegistration(models.Model):
+    username = models.CharField(max_length=150)
+    email = models.EmailField()
+    password = models.CharField(max_length=255) # Store hashed password
+    full_name = models.CharField(max_length=255)
+    profile_picture = models.ImageField(upload_to='profiles/pending/', null=True, blank=True)
+    token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        from django.utils import timezone
+        import datetime
+        return timezone.now() > self.created_at + datetime.timedelta(minutes=2)
+
+    def __str__(self):
+        return f"Pending: {self.username} ({self.email})"
 
 class SingletonModel(models.Model):
     class Meta:
@@ -28,7 +99,6 @@ class HomeSettings(SingletonModel):
     # Hero Section
     hero_greeting = models.CharField(max_length=100, default="Hello, I am")
     hero_name = models.CharField(max_length=100, default="Your Name")
-    hero_subtitle = models.CharField(max_length=100, default="Software Engineer")
     hero_description = models.TextField(blank=True)
     hero_bg_image = models.ImageField(upload_to='core/hero/', blank=True, help_text="Background image for hero section")
     hero_profile_image = models.ImageField(upload_to='core/hero/', blank=True, help_text="Your transparent profile picture")
@@ -40,9 +110,9 @@ class HomeSettings(SingletonModel):
     about_who_am_i = models.TextField(blank=True, help_text="Text for the 'Who am I?' section")
     
     # Contact Section Info
-    email = models.EmailField(blank=True)
-    phone = models.CharField(max_length=20, blank=True)
-    address = models.CharField(max_length=200, blank=True)
+    contact_heading = models.CharField(max_length=100, default="Let's Connect!")
+    contact_sub_heading = models.CharField(max_length=100, blank=True)
+    contact_text = models.TextField(blank=True, help_text="Text shown below the sub-heading")
     
     # Skills/Services/Projects Intro Text
     technical_skills_description = models.TextField(blank=True, help_text="Intro text for the Technical Skills section")
@@ -75,6 +145,20 @@ class HomeSettings(SingletonModel):
         verbose_name = "Home Page Content"
         verbose_name_plural = "Home Page Content"
 
+class NavbarMenu(models.Model):
+    settings = models.ForeignKey(HomeSettings, on_delete=models.CASCADE, default=1, related_name='navbar_menus')
+    name = models.CharField(max_length=50, verbose_name="Menu Name")
+    section_id = models.CharField(max_length=50, blank=True, help_text="HTML ID (auto-generated if empty). Use: 'home', 'about', 'experience', 'skills', 'projects', 'service', 'blog', 'contact' for existing sections.")
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = "Menu Item"
+        verbose_name_plural = "Menu Items"
+
+    def __str__(self):
+        return self.name
+
 # --- PROXY MODELS FOR ADMIN REORDER ---
 
 class NavbarSettings(HomeSettings):
@@ -101,24 +185,13 @@ class AboutSectionSettings(HomeSettings):
         verbose_name = "About Me Main"
         verbose_name_plural = "About Me Main"
 
-# ExpertiseSectionSettings removed/unused if we use direct model registration (Trainings/Certs)
-class ExpertiseSectionSettings(HomeSettings):
-    class Meta:
-        proxy = True
-        verbose_name = "Expertise Settings"
-        verbose_name_plural = "Expertise Settings"
 
-class BlogSectionSettings(HomeSettings):
-    class Meta:
-        proxy = True
-        verbose_name = "Blog Section Description"
-        verbose_name_plural = "Blog Section Description"
 
 class ContactSectionSettings(HomeSettings):
     class Meta:
         proxy = True
-        verbose_name = "Contact Components"
-        verbose_name_plural = "Contact Components"
+        verbose_name = "Contact Menu"
+        verbose_name_plural = "Contact Menu"
 
 class FooterSettings(HomeSettings):
     class Meta:
@@ -202,7 +275,7 @@ class ServiceBooking(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-    preferred_date = models.DateField()
+    preferred_date = models.DateField(null=True, blank=True)
     preferred_time = models.TimeField()
     additional_message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -243,11 +316,13 @@ class SkillCategory(models.Model):
     order = models.IntegerField(default=0)
     
     class Meta:
-        verbose_name_plural = "Skill Categories"
+        verbose_name = "Skill Category Label"
+        verbose_name_plural = "Skill Category Labels"
         ordering = ['order', 'name']
         
     def __str__(self):
         return self.name
+
 
 class SkillItem(models.Model):
     category = models.ForeignKey(SkillCategory, related_name='items', on_delete=models.CASCADE)
@@ -256,6 +331,8 @@ class SkillItem(models.Model):
     
     class Meta:
         ordering = ['order', 'name']
+        verbose_name = "Skill Item"
+        verbose_name_plural = "Skill Items"
         
     def __str__(self):
         return self.name
@@ -296,7 +373,6 @@ class BlogPost(models.Model):
     settings = models.ForeignKey(HomeSettings, on_delete=models.CASCADE, default=1, related_name='blog_posts')
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='core/blog/')
     content = RichTextField()
     views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -309,9 +385,111 @@ class BlogPost(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Blog Site Management"
+        verbose_name_plural = "Blog Site Management"
 
     def __str__(self):
         return self.title
+
+    @property
+    def image(self):
+        # Helper to get the main feature image (lowest order)
+        first_img = self.images.order_by('order').first()
+        if first_img:
+            return first_img.image
+        return None
+
+    @property
+    def like_count(self):
+        return self.reactions.filter(reaction='like').count()
+
+    @property
+    def dislike_count(self):
+        return self.reactions.filter(reaction='dislike').count()
+
+    @property
+    def comment_count(self):
+        return self.comments.count()
+
+    @property
+    def view_count(self):
+        return self.view_tracks.count()
+
+class BlogPostImage(models.Model):
+    post = models.ForeignKey(BlogPost, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='core/blog/gallery/')
+    caption = models.CharField(max_length=200, blank=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"Image {self.id}"
+
+class BlogComment(models.Model):
+    post = models.ForeignKey(BlogPost, related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.username}"
+
+    @property
+    def like_count(self):
+        return self.comment_reactions.filter(reaction='like').count()
+
+    @property
+    def dislike_count(self):
+        return self.comment_reactions.filter(reaction='dislike').count()
+
+class CommentReaction(models.Model):
+    REACTION_CHOICES = (
+        ('like', 'Like'),
+        ('dislike', 'Dislike')
+    )
+    comment = models.ForeignKey(BlogComment, related_name='comment_reactions', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    reaction = models.CharField(max_length=10, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('comment', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} {self.reaction} comment {self.comment.id}"
+
+class BlogReaction(models.Model):
+    REACTION_CHOICES = (
+        ('like', 'Like'),
+        ('dislike', 'Dislike')
+    )
+    post = models.ForeignKey(BlogPost, related_name='reactions', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    reaction = models.CharField(max_length=10, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'user') # One reaction per user per post
+
+    def __str__(self):
+        return f"{self.user.username}: {self.reaction}"
+
+class BlogViewTrack(models.Model):
+    post = models.ForeignKey(BlogPost, related_name='view_tracks', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    browsing_source = models.CharField(max_length=255, null=True, blank=True)
+    contact_number = models.CharField(max_length=20, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        user_info = self.user.username if self.user else "Anonymous"
+        return f"View by {user_info}"
+
 
 class ContactMessage(models.Model):
     name = models.CharField(max_length=100)
@@ -326,35 +504,44 @@ class ContactMessage(models.Model):
 
 # Legacy Models
 class Skill(models.Model):
-    name = models.CharField(max_length=50)
+    settings = models.ForeignKey(HomeSettings, on_delete=models.CASCADE, default=1, related_name='skills')
+    name = models.CharField(max_length=50, verbose_name="Technology Name")
+    image = models.ImageField(upload_to='core/skills/', verbose_name="Image")
+    # Hidden fields (legacy support or internal)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='core/skills/', blank=True)
     icon_class = models.CharField(max_length=50, blank=True)
     dominant_color = models.CharField(max_length=7, blank=True, default='')
     order = models.IntegerField(default=0)
+    
     class Meta: 
         ordering = ['order', 'name']
+        verbose_name = "Skill Card"
+        verbose_name_plural = "Skill Cards"
+
     def __str__(self): return self.name
 
-class SocialLink(models.Model):
-    platform_name = models.CharField(max_length=50)
-    icon_class = models.CharField(max_length=50)
-    url = models.URLField()
-    def __str__(self): return self.platform_name
+class TechnicalSkillsSection(HomeSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Technical Skills"
+        verbose_name_plural = "Technical Skills"
 
-class AboutMeItem(models.Model):
-    CATEGORY_CHOICES = [
-        ('FOCUS', 'Professional Focus'),
-        ('SKILL', 'Key Skills'),
-        ('ROLE', 'Current Roles'),
-    ]
-    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
-    text = models.CharField(max_length=200)
-    order = models.IntegerField(default=0)
+
+class Review(models.Model):
+    name = models.CharField(max_length=50)
+    email = models.EmailField()
+    profession = models.CharField(max_length=50)
+    location = models.CharField(max_length=50)
+    picture = models.ImageField(upload_to='core/reviews/', blank=True, null=True, help_text="Optional user picture")
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], default=5)
+    comment = models.TextField(max_length=70, help_text="Short comment about the service")
+    is_approved = models.BooleanField(default=True, help_text="Set to False to hide this review")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['category', 'order']
-        verbose_name_plural = "About Me Items"
+        ordering = ['-created_at']
+        verbose_name = "User Review"
+        verbose_name_plural = "User Reviews"
 
     def __str__(self):
-        return f"{self.get_category_display()}: {self.text}"
+        return f"{self.name} - {self.rating} Stars"

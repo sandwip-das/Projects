@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12" style="max-width: 625px;">
+            <!-- Single Profile Card -->
+            <div class="card profile-content-card shadow-sm border-0">
+                <div class="card-body p-3">
+                    <!-- Profile Header Section with Picture on Left, Info on Right -->
+                    <div class="row mb-3 pb-3 border-bottom align-items-center">
+                        <div class="col-auto">
+                            <!-- Profile Picture on Left -->
+                            {% if user.profile.profile_picture %}
+                            <img src="{{ user.profile.profile_picture.url }}"
+                                class="profile-picture-main-left rounded-circle shadow-sm" alt="{{ user.username }}">
+                            {% else %}
+                            <div
+                                class="profile-picture-main-left-placeholder rounded-circle shadow-sm d-flex align-items-center justify-content-center">
+                                <span class="profile-initial-main"></span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <!-- Full Name -->
+                            <h3 class="mb-1 fw-bold profile-full-name">
+                                {% if user.first_name and user.last_name %}
+                                {{ user.first_name }} {{ user.last_name }}
+                                {% else %}
+                                {{ user.username }}
+                                {% endif %}
+                            </h3>
+                            <!-- Username -->
+                            <p class="text-muted mb-2 profile-username">@{{ user.username }}</p>
+                            <!-- User Status Badge -->
+                            <div>
+                                {% if user.is_superuser %}
+                                <span class="badge bg-danger px-3 py-2 rounded-pill">
+                                    <i class="fas fa-crown me-1"></i>Admin
+                                </span>
+                                {% elif user.is_staff %}
+                                <span class="badge bg-primary px-3 py-2 rounded-pill">
+                                    <i class="fas fa-edit me-1"></i>Editor
+                                </span>
+                                {% else %}
+                                <span class="badge bg-success px-3 py-2 rounded-pill">
+                                    <i class="fas fa-book-reader me-1"></i>Reader
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs profile-nav-tabs border-0 mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="view-tab" data-bs-toggle="tab"
+                                data-bs-target="#view-profile" type="button" role="tab">
+                                <i class="fas fa-user me-2"></i>View Profile
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit-profile"
+                                type="button" role="tab">
+                                <i class="fas fa-edit me-2"></i>Edit Profile
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content profile-tab-content">
+                        <!-- View Profile Tab -->
+                        <div class="tab-pane fade show active profile-tab-pane" id="view-profile" role="tabpanel">
+                            <h5 class="profile-section-title mb-3">
+                                <i class="fas fa-id-badge me-2 text-primary"></i>Personal Details
+                            </h5>
+                            <div class="profile-info-item-inline mb-2">
+                                <strong>Email:</strong> {{ user.email|default:"Not specified" }}
+                            </div>
+                            <div class="profile-info-item-inline mb-2">
+                                <strong>Bio:</strong> {{ user.profile.bio|default:"Not specified" }}
+                            </div>
+                            <div class="profile-info-item-inline mb-2">
+                                <strong>Educational Qualifications:</strong>
+                                {% if user.profile.educational_qualifications %}
+                                {{ user.profile.educational_qualifications }}
+                                {% else %}
+                                Not specified
+                                {% endif %}
+                            </div>
+                            <div class="profile-info-item-inline mb-2">
+                                <strong>Interested Subject:</strong>
+                                {% if user.profile.interested_subjects %}
+                                {{ user.profile.interested_subjects }}
+                                {% else %}
+                                Not specified
+                                {% endif %}
+                            </div>
+                            <div class="profile-info-item-inline mb-2">
+                                <strong>Profession:</strong> {{ user.profile.profession|default:"Not specified" }}
+                            </div>
+                            <div class="profile-info-item-inline mb-2">
+                                <strong>Mobile Number:</strong> {{ user.profile.mobile_number|default:"Not specified" }}
+                            </div>
+                            <div class="profile-info-item-inline mb-2">
+                                <strong>Current City:</strong> {{ user.profile.current_city|default:"Not specified" }}
+                            </div>
+                            <div class="profile-info-item-inline mb-2">
+                                <strong>Country:</strong> {{ user.profile.country|default:"Not specified" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Profile Tab -->
+                    <div class="tab-pane fade profile-tab-pane" id="edit-profile" role="tabpanel">
+                        <form method="POST" action="{% url 'edit_profile' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+
+                            <!-- Account Information -->
+                            <h5 class="profile-section-title mb-1">
+                                <i class="fas fa-user-circle me-2 text-primary"></i>Account Information
+                            </h5>
+
+                            <div class="row mb-1">
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">First Name</label>
+                                    <input type="text" name="first_name" class="form-control profile-form-control"
+                                        value="{{ user.first_name }}" placeholder="Enter first name">
+                                </div>
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control profile-form-control"
+                                        value="{{ user.last_name }}" placeholder="Enter last name">
+                                </div>
+                            </div>
+
+                            <!-- Profile Picture and Email on Same Line -->
+                            <div class="row mb-1">
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Profile Picture</label>
+                                    <input type="file" name="profile_picture" class="form-control profile-form-control"
+                                        accept="image/*" id="profilePictureInput">
+                                </div>
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Email</label>
+                                    <input type="email" name="email" class="form-control profile-form-control"
+                                        value="{{ user.email }}" placeholder="Enter email address">
+                                </div>
+                            </div>
+
+                            <hr class="my-1">
+
+                            <!-- Personal Details -->
+                            <h5 class="profile-section-title mb-1">
+                                <i class="fas fa-id-badge me-2 text-primary"></i>Personal Details
+                            </h5>
+                            <div class="mb-1">
+                                <label class="form-label profile-form-label">Bio</label>
+                                <textarea name="bio" class="form-control profile-form-control" rows="2"
+                                    placeholder="Tell us about yourself...">{{ user.profile.bio }}</textarea>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Educational Qualifications</label>
+                                    <input type="text" name="educational_qualifications"
+                                        class="form-control profile-form-control"
+                                        value="{{ user.profile.educational_qualifications }}"
+                                        placeholder="Enter your latest earned degree">
+                                </div>
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Interested Subject</label>
+                                    <input type="text" name="interested_subjects"
+                                        class="form-control profile-form-control"
+                                        value="{{ user.profile.interested_subjects }}"
+                                        placeholder="eg, Physics, IT, etc..">
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Profession</label>
+                                    <input type="text" name="profession" class="form-control profile-form-control"
+                                        value="{{ user.profile.profession }}" placeholder="Enter your profession">
+                                </div>
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Mobile Number</label>
+                                    <input type="text" name="mobile_number" class="form-control profile-form-control"
+                                        value="{{ user.profile.mobile_number }}" placeholder="Enter mobile number">
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Current City</label>
+                                    <input type="text" name="current_city" class="form-control profile-form-control"
+                                        value="{{ user.profile.current_city }}" placeholder="Enter city">
+                                </div>
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label profile-form-label">Country</label>
+                                    <input type="text" name="country" class="form-control profile-form-control"
+                                        value="{{ user.profile.country }}" placeholder="Enter country">
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-flex justify-content-end mt-2">
+                                <button type="submit" class="btn btn-primary px-5 py-2 fw-bold rounded-pill shadow-sm">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    // Image preview functionality - Updates header profile picture
+    const fileInput = document.getElementById('profilePictureInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    // Update header profile picture
+                    const headerImg = document.querySelector('.profile-picture-main-left');
+                    const headerPlaceholder = document.querySelector('.profile-picture-main-left-placeholder');
+
+                    if (headerImg) {
+                        // If image exists, update its source
+                        headerImg.src = e.target.result;
+                    } else if (headerPlaceholder) {
+                        // If placeholder exists, replace with image
+                        const newImg = document.createElement('img');
+                        newImg.src = e.target.result;
+                        newImg.className = 'profile-picture-main-left rounded-circle shadow-sm';
+                        newImg.alt = 'Profile picture';
+                        headerPlaceholder.parentNode.replaceChild(newImg, headerPlaceholder);
+                    }
+
+                    // Original logic for profilePicturePreview and profilePicturePlaceholder
+                    const preview = document.getElementById('profilePicturePreview');
+                    const placeholder = document.getElementById('profilePicturePlaceholder');
+
+                    if (preview) {
+                        preview.src = e.target.result;
+                    } else if (placeholder) {
+                        // Replace placeholder with image
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'profile-picture-preview-img rounded-circle';
+                        img.id = 'profilePicturePreview';
+                        placeholder.parentNode.replaceChild(img, placeholder);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+</script>
+{% endblock %}

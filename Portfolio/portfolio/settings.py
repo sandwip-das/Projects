@@ -37,16 +37,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'core',
-    'admin_reorder',
+    'django.contrib.humanize',
 
     # Third party
+    'ckeditor',
+    'ckeditor_uploader',
+    'nested_admin',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'ckeditor',
-    'ckeditor_uploader',
 ]
 
 # CKEditor Configuration
@@ -71,108 +73,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-    'admin_reorder.middleware.ModelAdminReorder',
 ]
-
-ADMIN_REORDER = (
-    # 1. User Submissions
-    {
-        'app': 'submissions',
-        'label': 'User Submissions',
-        'models': (
-            'core.ServiceBooking',
-            'core.ContactMessage',
-        )
-    },
-    
-    # 2. User Management
-    'auth',
-
-    # --- PORTFOLIO CONTENT (10 Menus) ---
-
-    # Menu 1
-    {
-        'app': 'menu_navbar',
-        'label': '01. Navbar Content', 
-        'models': ('core.NavbarSettings',)
-    },
-    
-    # Menu 2
-    {
-        'app': 'menu_hero',
-        'label': '02. Hero Section Content', 
-        'models': (
-            'core.HeroMainSettings',
-            'core.HeroSocialSettings',
-        )
-    },
-    
-    # Menu 3
-    {
-        'app': 'menu_about',
-        'label': '03. About Me Content',
-        'models': (
-            'core.AboutSectionSettings',
-            'core.AcademicBackground',
-        )
-    },
-    
-    # Menu 4
-    {
-        'app': 'menu_experience',
-        'label': '04. My Experience Content',
-        'models': ('core.Experience',)
-    },
-    
-    # Menu 5
-    {
-        'app': 'menu_expertise',
-        'label': '05. My Expertise Content',
-        'models': (
-            'core.SkillCategory',
-            'core.ProfessionalTrainingModel',
-            'core.GlobalCertificationModel',
-        )
-    },
-    
-    # Menu 6
-    {
-        'app': 'menu_projects',
-        'label': '06. Featured Projects Content',
-        'models': ('core.Project',)
-    },
-    
-    # Menu 7
-    {
-        'app': 'menu_services',
-        'label': '07. My Services Content',
-        'models': ('core.Service',)
-    },
-    
-    # Menu 8
-    {
-        'app': 'menu_blog',
-        'label': '08. My Blog Content',
-        'models': (
-            'core.BlogSectionSettings',
-            'core.BlogPost',
-        )
-    },
-    
-    # Menu 9
-    {
-        'app': 'menu_contact',
-        'label': '09. Contact',
-        'models': ('core.ContactSectionSettings',)
-    },
-    
-    # Menu 10
-    {
-        'app': 'menu_footer',
-        'label': '10. Footer Content',
-        'models': ('core.FooterSettings',)
-    },
-)
 
 ROOT_URLCONF = 'portfolio.urls'
 
@@ -186,7 +87,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-
+                'core.context_processors.site_settings',
             ],
         },
     },
@@ -251,21 +152,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Auth settings
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
-
-SITE_ID = 1
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_USERNAME_MIN_LENGTH = 1
-LOGIN_REDIRECT_URL = '/blog/'
-LOGOUT_REDIRECT_URL = '/blog/'
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -275,3 +161,19 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'sandipdas050@gmail.com'
 EMAIL_HOST_PASSWORD = 'fglz umhr gbyy vlzu'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Allauth Config
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+SITE_ID = 1
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+LOGIN_REDIRECT_URL = 'edit_profile'
+LOGOUT_REDIRECT_URL = '/'
+SOCIALACCOUNT_LOGIN_ON_GET = True

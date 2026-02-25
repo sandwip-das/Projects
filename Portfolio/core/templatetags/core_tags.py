@@ -107,3 +107,103 @@ def paragraphs_with_divider(text):
             parts.append(divider)
 
     return mark_safe('\n'.join(parts))
+
+
+@register.filter(name='get_at_index')
+def get_at_index(list_data, index):
+    try:
+        return list_data[index]
+    except (IndexError, TypeError):
+        return None
+
+
+@register.filter(name='paragraphs_as_list')
+def paragraphs_as_list(text):
+    if not text:
+        return []
+
+    # If it's HTML (RichText), split by closing </p> tag
+    if '</p>' in text:
+        import re
+        # This is a bit naive but works for standard CKEditor output
+        paras = re.findall(r'<p>.*?</p>', text, re.DOTALL)
+        if not paras:
+            return [text]
+        return paras
+    
+    # Text fallback
+    raw = text.replace('\r\n', '\n')
+    paragraphs = [p.strip() for p in raw.split('\n\n') if p.strip()]
+    if len(paragraphs) <= 1:
+        paragraphs = [p.strip() for p in raw.split('\n') if p.strip()]
+    return paragraphs
+
+@register.filter(name='render_interleaved_content')
+def render_interleaved_content(post):
+    if not post or not getattr(post, 'content', None):
+        return ""
+        
+    text = post.content
+    if '</p>' in text:
+        import re
+        paras = re.findall(r'<p>.*?</p>', text, re.DOTALL)
+        if not paras:
+            paras = [text]
+    else:
+        raw = text.replace('\r\n', '\n')
+        paras = [p.strip() for p in raw.split('\n\n') if p.strip()]
+        if len(paras) <= 1:
+            paras = [p.strip() for p in raw.split('\n') if p.strip()]
+        paras = [f'<p>{p}</p>' for p in paras]
+        
+    images = list(post.images.all())
+    
+    # We skip the first 2 images because they are shown at the top
+    interleave_images = images[2:] if len(images) > 2 else []
+    
+    result = []
+    
+    for i, para in enumerate(paras):
+        result.append(para)
+        
+        # If we have an image for this paragraph, inject it
+        if i < len(interleave_images):
+            img = interleave_images[i]
+            img_url = img.image.url if img.image else ''
+            caption_text = img.caption if img.caption else getattr(post, 'title', '')
+            
+            caption_html = ''
+            if img.caption:
+                caption_html = f'<p class="text-center text-sm text-gray-400 p-3 bg-white/5 m-0 border-t border-white/10">{img.caption}</p>'
+                
+            img_html = f'''
+            <div class="flex justify-center my-10">
+                <div class="rounded-2xl overflow-hidden border border-white/10 shadow-xl w-full md:w-1/4 hover:shadow-[#2ecc71]/20 transition-shadow">
+                    <img src="{img_url}" alt="{caption_text}" class="w-full h-auto object-cover">
+                    {caption_html}
+                </div>
+            </div>
+            '''
+            result.append(img_html)
+            
+    # Append any remaining images at the very end
+    if len(interleave_images) > len(paras):
+        for img in interleave_images[len(paras):]:
+            img_url = img.image.url if img.image else ''
+            caption_text = img.caption if img.caption else getattr(post, 'title', '')
+            
+            caption_html = ''
+            if img.caption:
+                caption_html = f'<p class="text-center text-sm text-gray-400 p-3 bg-white/5 m-0 border-t border-white/10">{img.caption}</p>'
+                
+            img_html = f'''
+            <div class="flex justify-center my-10">
+                <div class="rounded-2xl overflow-hidden border border-white/10 shadow-xl w-full md:w-1/4 hover:shadow-[#2ecc71]/20 transition-shadow">
+                    <img src="{img_url}" alt="{caption_text}" class="w-full h-auto object-cover">
+                    {caption_html}
+                </div>
+            </div>
+            '''
+            result.append(img_html)
+
+    return mark_safe('\n'.join(result))

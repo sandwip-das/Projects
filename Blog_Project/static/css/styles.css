@@ -1,0 +1,1221 @@
+/* Global variables for Light/Dark mode */
+:root {
+    --primary-color: #6366f1;
+    --secondary-color: #ec4899;
+    --background-light: #f8fafc;
+    --text-light: #1e293b;
+    --card-bg-light: #ffffff;
+    --border-light: #e2e8f0;
+
+    --background-dark: #0f172a;
+    --text-dark: #ffffff;
+    /* Pure white for max visibility in dark mode */
+    --text-muted-dark: #e2e8f0;
+    /* Lighter gray for muted text */
+    --card-bg-dark: #1e293b;
+    --border-dark: #334155;
+
+    /* Specific Trending Card Border Logic */
+    --trending-border-light: #10b981;
+    --trending-border-dark: #ffffff;
+
+    --transition-speed: 0.3s;
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+[data-theme="dark"] {
+    --background: var(--background-dark);
+    --text: var(--text-dark);
+    --card-bg: var(--card-bg-dark);
+    --border: var(--border-dark);
+    --nav-bg: rgba(15, 23, 42, 0.95);
+    --muted: var(--text-muted-dark);
+}
+
+[data-theme="light"] {
+    --background: var(--background-light);
+    --text: var(--text-light);
+    --card-bg: var(--card-bg-light);
+    --border: var(--border-light);
+    --nav-bg: rgba(255, 255, 255, 0.95);
+    --muted: #64748b;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: var(--font-body);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Typography & Animations */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--text);
+    /* Ensure headers use the visible text color */
+}
+
+/* Fade In Animation on Load */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-load {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.animate-hover {
+    transition: transform 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.animate-hover:hover {
+    transform: translateY(-3px);
+}
+
+/* Navbar */
+.navbar {
+    background: var(--nav-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.8rem 0;
+    animation: fadeIn 0.6s ease-out;
+}
+
+.navbar-brand {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: transform 0.3s;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+.nav-link {
+    color: var(--text) !important;
+    font-weight: 500;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+    transform: translateY(-1px);
+}
+
+/* Navbar Toggler (Mobile Menu Button) - Dark Mode Fix */
+[data-theme="dark"] .navbar-toggler-icon {
+    filter: invert(1) brightness(100);
+}
+
+/* Search Bar Border Colors */
+.navbar .input-group {
+    border: 2px solid #10b981;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+[data-theme="dark"] .navbar .input-group {
+    border-color: #ffffff;
+}
+
+.navbar .input-group .form-control,
+.navbar .input-group .input-group-text,
+.navbar .input-group .btn {
+    border: none !important;
+}
+
+/* Mobile Navbar Collapse Alignment */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        margin-top: 1rem;
+    }
+
+    /* Align toggle button and profile icon vertically */
+    .navbar>.container-fluid {
+        align-items: center !important;
+    }
+
+    /* Left align navbar menu items (Categories) */
+    .navbar-collapse .navbar-nav {
+        align-items: flex-start !important;
+    }
+
+    /* Full width search bar on mobile */
+    .navbar-collapse form {
+        width: 100% !important;
+        min-width: 100% !important;
+        margin: 1rem 0 !important;
+    }
+
+    /* Keep right-side elements (New Post, Theme, Auth) on same line */
+    .navbar-collapse .d-flex.align-items-center {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+}
+
+/* Sidebars Width Constraint */
+.sidebar-col {
+    max-width: 250px;
+    /* adjusted slightly for breathing room, user asked 200px but bootstrap cols might break. Will use flex styles in HTML */
+    flex: 0 0 250px;
+}
+
+@media (max-width: 992px) {
+    .sidebar-col {
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    /* Increased slightly to fit background better, transparent cards */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    background-image: url('https://picsum.photos/1500/300');
+    /* Auto generated background */
+    padding: 0;
+}
+
+.hero-overlay {
+    background: rgba(0, 0, 0, 0.4);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Transparent Hero Cards */
+.hero-card-transparent {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Content Cards */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: fadeIn 1s ease-out;
+    /* Load animation */
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+
+.card-title {
+    color: var(--text);
+}
+
+.card-text {
+    color: var(--muted);
+}
+
+/* Text Muted Override */
+.text-muted {
+    color: var(--muted) !important;
+}
+
+[data-theme="dark"] .article-content {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .article-content * {
+    color: #ffffff !important;
+}
+
+/* Footer */
+.footer {
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border);
+    padding: 0.5rem 0;
+    margin-top: auto;
+    width: 100%;
+    animation: fadeIn 1.2s ease-out;
+}
+
+.social-icon {
+    color: var(--text);
+    font-size: 1.5rem;
+    transition: transform 0.3s, color 0.3s;
+}
+
+.social-icon:hover {
+    color: var(--secondary-color);
+    transform: rotate(15deg) scale(1.2);
+}
+
+/* Auth Pages Styling */
+.auth-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+}
+
+/* Form inputs */
+.form-control {
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.75rem 1rem;
+    border-radius: 30px;
+}
+
+.form-control:focus {
+    background-color: var(--background);
+    color: var(--text);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-radius: 0 30px 30px 0;
+}
+
+.input-group .input-group-text {
+    border-radius: 30px 0 0 30px;
+}
+
+[data-theme="dark"] .form-control {
+    background-color: var(--background-dark) !important;
+    border-color: var(--border-dark) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .form-control::placeholder {
+    color: #cbd5e1 !important;
+}
+
+/* Fix for Select and File Inputs in Dark Mode */
+[data-theme="dark"] .form-select,
+[data-theme="dark"] select.form-control {
+    background-color: var(--background-dark) !important;
+    color: #ffffff !important;
+    border-color: var(--border-dark) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+[data-theme="dark"] input[type="file"].form-control {
+    background-color: var(--background-dark) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] input[type="file"].form-control::file-selector-button {
+    background-color: var(--card-bg-dark) !important;
+    color: #ffffff !important;
+    border-color: var(--border-dark) !important;
+}
+
+[data-theme="dark"] .form-label,
+[data-theme="dark"] label {
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .form-control {
+    color: #000000 !important;
+    border-color: #10b981;
+}
+
+[data-theme="light"] .form-control::placeholder {
+    color: #10b981;
+    /* Keep existing light theme placeholder logic */
+}
+
+/* YouTube-style Button CSS (Global) */
+.yt-btn {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 18px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+[data-theme="dark"] .yt-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure hover works properly */
+.yt-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .yt-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Utils */
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Marquee */
+.marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.marquee-content {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 20s linear infinite;
+    color: #ff0000;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 1.2rem;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(-100%, 0);
+    }
+}
+
+/* Full Width Utility */
+.container-fluid-custom {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Small Card Icons */
+.icon-stat {
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.icon-stat i {
+    margin-right: 3px;
+}
+
+[data-theme="dark"] .bg-light-subtle {
+    background-color: var(--card-bg-dark) !important;
+    border-color: var(--border-dark) !important;
+}
+
+/* Trending Card Specifics */
+.trending-card {
+    border: 1px solid var(--trending-border-light) !important;
+}
+
+[data-theme="dark"] .trending-card {
+    border-color: var(--trending-border-dark) !important;
+}
+
+/* Footer Specifics for Light Mode */
+[data-theme="light"] .footer,
+[data-theme="light"] .footer .text-muted,
+[data-theme="light"] .footer a,
+[data-theme="light"] .footer button,
+[data-theme="light"] .footer .social-icon {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Hide Django form help text that shows literal template syntax */
+.auth-card .helptext,
+.auth-card .form-text {
+    display: none !important;
+}
+
+/* Password Toggle Button Styling */
+.password-toggle {
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: var(--primary-color) !important;
+}
+
+.password-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.password-toggle i {
+    font-size: 1.1rem;
+}
+
+/* ========================================
+   PROFILE PAGE STYLES
+======================================== */
+
+/* Profile Picture in Main Section */
+.profile-picture-main {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+}
+
+.profile-picture-main-placeholder {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.profile-initial {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Profile Picture in Edit Section */
+.profile-picture-edit {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+}
+
+.profile-picture-edit-placeholder {
+    width: 80px;
+    height: 80px;
+    background-color: var(--background);
+    border: 2px dashed var(--border);
+}
+
+/* Profile Full Name and Username */
+.profile-full-name {
+    color: var(--text);
+    font-family: var(--font-heading);
+}
+
+.profile-username {
+    font-size: 1rem;
+    color: var(--muted);
+}
+
+/* Profile Content Card */
+.profile-content-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+}
+
+/* Tab Navigation Styling */
+.profile-nav-tabs {
+    border-bottom: 2px solid var(--border) !important;
+}
+
+.profile-nav-tabs .nav-link {
+    color: var(--muted);
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+.profile-nav-tabs .nav-link:hover {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    background: transparent;
+}
+
+.profile-nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    background: transparent;
+}
+
+/* Section Titles */
+.profile-section-title {
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Profile Info Items (View Tab) */
+.profile-info-item {
+    margin-bottom: 1.25rem;
+}
+
+.profile-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.35rem;
+    display: block;
+}
+
+.profile-value {
+    color: var(--text);
+    font-size: 1rem;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+/* Form Elements (Edit Tab) */
+.profile-form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.profile-form-control {
+    height: 38px;
+    /* Reduced height for professional look */
+    padding: 0.5rem 0.875rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    color: var(--text);
+    transition: all 0.2s ease;
+}
+
+.profile-form-control:focus {
+    background-color: var(--background);
+    border-color: var(--primary-color);
+    color: var(--text);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Textarea specific styling */
+textarea.profile-form-control {
+    height: auto;
+    min-height: 90px;
+    resize: vertical;
+}
+
+/* File input styling */
+input[type="file"].profile-form-control {
+    height: auto;
+    padding: 0.5rem;
+}
+
+/* Dark Mode Specific Overrides */
+[data-theme="dark"] .profile-content-card {
+    background-color: var(--card-bg-dark);
+    border-color: var(--border-dark);
+}
+
+[data-theme="dark"] .profile-full-name,
+[data-theme="dark"] .profile-section-title,
+[data-theme="dark"] .profile-value,
+[data-theme="dark"] .profile-form-label {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .profile-username,
+[data-theme="dark"] .profile-label {
+    color: var(--text-muted-dark);
+}
+
+[data-theme="dark"] .profile-form-control {
+    background-color: var(--background-dark);
+    border-color: var(--border-dark);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .profile-form-control::placeholder {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .profile-form-control:focus {
+    background-color: var(--background-dark);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .profile-nav-tabs {
+    border-bottom-color: var(--border-dark) !important;
+}
+
+[data-theme="dark"] .profile-picture-edit-placeholder {
+    background-color: var(--card-bg-dark);
+    border-color: var(--border-dark);
+}
+
+[data-theme="dark"] .profile-picture-edit {
+    border-color: var(--border-dark);
+}
+
+/* Light Mode Specific Overrides */
+[data-theme="light"] .profile-content-card {
+    background-color: #ffffff;
+    border-color: var(--border-light);
+}
+
+[data-theme="light"] .profile-full-name,
+[data-theme="light"] .profile-section-title,
+[data-theme="light"] .profile-value,
+[data-theme="light"] .profile-form-label {
+    color: #000000;
+}
+
+[data-theme="light"] .profile-username,
+[data-theme="light"] .profile-label {
+    color: #64748b;
+}
+
+[data-theme="light"] .profile-form-control {
+    background-color: #ffffff;
+    border-color: var(--border-light);
+    color: #000000;
+}
+
+[data-theme="light"] .profile-form-control::placeholder {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .profile-form-control:focus {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+[data-theme="light"] .profile-nav-tabs {
+    border-bottom-color: var(--border-light) !important;
+}
+
+[data-theme="light"] .profile-picture-edit-placeholder {
+    background-color: #f8fafc;
+    border-color: var(--border-light);
+}
+
+[data-theme="light"] .profile-picture-edit {
+    border-color: var(--border-light);
+}
+
+/* Badge Animations */
+.badge {
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: transform 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+
+    .profile-picture-main,
+    .profile-picture-main-placeholder {
+        width: 80px;
+        height: 80px;
+    }
+
+    .profile-initial {
+        font-size: 2rem;
+    }
+
+    .profile-full-name {
+        font-size: 1.5rem;
+    }
+
+    .profile-nav-tabs .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .profile-picture-edit,
+    .profile-picture-edit-placeholder {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Profile Picture in Top Right Corner */
+.profile-picture-top-right {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+}
+
+.profile-picture-top-right-placeholder {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.profile-initial-small {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Profile Picture Upload Area (in Edit Tab) */
+.profile-picture-upload-area {
+    width: 100px;
+    height: 100px;
+}
+
+.profile-picture-upload {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 3px solid var(--border);
+}
+
+.profile-picture-upload-placeholder {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #94a3b8, #cbd5e1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-initial-upload {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Fix Tab Background in Dark Mode */
+.profile-nav-tabs .nav-link {
+    background: transparent !important;
+}
+
+.profile-nav-tabs .nav-link:hover,
+.profile-nav-tabs .nav-link.active {
+    background: transparent !important;
+}
+
+.tab-content {
+    background: transparent !important;
+}
+
+.tab-pane {
+    background: transparent !important;
+}
+
+[data-theme="dark"] .profile-nav-tabs .nav-link {
+    background: transparent !important;
+}
+
+[data-theme="dark"] .profile-nav-tabs .nav-link:hover,
+[data-theme="dark"] .profile-nav-tabs .nav-link.active {
+    background: transparent !important;
+}
+
+[data-theme="dark"] .tab-content,
+[data-theme="dark"] .tab-pane {
+    background: transparent !important;
+}
+
+[data-theme="dark"] .profile-picture-upload-placeholder {
+    background: linear-gradient(135deg, #475569, #64748b);
+}
+
+[data-theme="dark"] .profile-picture-upload {
+    border-color: var(--border-dark);
+}
+
+[data-theme="light"] .profile-nav-tabs .nav-link {
+    background: transparent !important;
+}
+
+[data-theme="light"] .profile-nav-tabs .nav-link:hover,
+[data-theme="light"] .profile-nav-tabs .nav-link.active {
+    background: transparent !important;
+}
+
+[data-theme="light"] .tab-content,
+[data-theme="light"] .tab-pane {
+    background: transparent !important;
+}
+
+[data-theme="light"] .profile-picture-upload-placeholder {
+    background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
+}
+
+[data-theme="light"] .profile-picture-upload {
+    border-color: var(--border-light);
+}
+
+/* Responsive for new layout */
+@media (max-width: 768px) {
+
+    .profile-picture-top-right,
+    .profile-picture-top-right-placeholder {
+        width: 80px;
+        height: 80px;
+    }
+
+    .profile-initial-small {
+        font-size: 2rem;
+    }
+
+    .profile-picture-upload,
+    .profile-picture-upload-placeholder,
+    .profile-picture-upload-area {
+        width: 80px;
+        height: 80px;
+    }
+
+    .profile-initial-upload {
+        font-size: 2rem;
+    }
+}
+
+/* Compact Form Controls for Profile Page */
+.profile-form-control {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.profile-form-label {
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Profile Picture on Top Left */
+.profile-picture-main-left {
+    width: 120px;
+    height: 150px;
+    object-fit: cover;
+    object-position: center 30%;
+    border: 3px solid var(--primary-color);
+    border-radius: 50%;
+}
+
+.profile-picture-main-left-placeholder {
+    width: 120px;
+    height: 150px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 50%;
+}
+
+.profile-initial-main {
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Inline Profile Info Items */
+.profile-info-item-inline {
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+.profile-info-item-inline strong {
+    color: var(--text-color);
+    margin-right: 0.5rem;
+}
+
+[data-theme="dark"] .profile-info-item-inline,
+[data-theme="dark"] .profile-info-item-inline strong {
+    color: #ffffff;
+}
+
+/* Profile Picture Preview in Account Information */
+.profile-picture-upload-preview {
+    width: 80px;
+    height: 80px;
+}
+
+.profile-picture-preview-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+}
+
+.profile-picture-preview-placeholder {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-initial-preview {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Fix Dark Mode - All Text Must Be White */
+[data-theme="dark"] .profile-tab-content,
+[data-theme="dark"] .profile-tab-pane {
+    background-color: var(--card-bg-dark) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .profile-full-name,
+[data-theme="dark"] .profile-section-title,
+[data-theme="dark"] .profile-value,
+[data-theme="dark"] .profile-form-label,
+[data-theme="dark"] .profile-label {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .profile-username {
+    color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .profile-info-item .profile-value,
+[data-theme="dark"] .profile-info-item p {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .text-muted {
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .profile-picture-preview-img {
+    border-color: var(--border-dark);
+}
+
+/* Light Mode Tab Content */
+[data-theme="light"] .profile-tab-content,
+[data-theme="light"] .profile-tab-pane {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+[data-theme="light"] .profile-picture-preview-img {
+    border-color: var(--border-light);
+}
+
+/* Responsive for Left Layout */
+@media (max-width: 768px) {
+
+    .profile-picture-main-left,
+    .profile-picture-main-left-placeholder {
+        width: 90px;
+        height: 115px;
+    }
+
+    .profile-initial-main {
+        font-size: 2.25rem;
+    }
+
+    .profile-picture-upload-preview,
+    .profile-picture-preview-img,
+    .profile-picture-preview-placeholder {
+        width: 70px;
+        height: 70px;
+    }
+
+    .profile-initial-preview {
+        font-size: 1.75rem;
+    }
+}
+
+/* ========================================
+   NESTED DROPDOWN & HOVER EFFECTS
+======================================== */
+
+/* Ensure parent li has relative position for submenu absolute positioning */
+.dropdown-menu li {
+    position: relative;
+}
+
+/* Desktop Hover Logic */
+@media (min-width: 992px) {
+
+    /* Show main dropdown on hover */
+    .navbar .hover-dropdown:hover>.dropdown-menu {
+        display: block;
+        margin-top: 0;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    /* Submenu Positioning (Right Side) */
+    .dropdown-menu .submenu {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: 0;
+        margin-top: -5px;
+        /* Adjust alignment */
+        margin-left: 0px;
+    }
+
+    /* Show submenu on hover of parent li */
+    .dropdown-menu>li:hover>.submenu {
+        display: block !important;
+        animation: fadeIn 0.2s ease-out;
+    }
+}
+
+/* Icon Animation */
+.dropdown-item i.fas.fa-chevron-right {
+    transition: transform 0.2s;
+}
+
+.dropdown-item:hover i.fas.fa-chevron-right {
+    transform: translateX(3px);
+}
+
+.text-gradient-orange {
+    background: linear-gradient(135deg, #FF5722, #D84315);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Category Dropdown Item Hover */
+.hover-dropdown .dropdown-item:hover {
+    color: #FF1493 !important;
+    background-color: rgba(255, 20, 147, 0.05) !important;
+}
+
+/* Dark Mode Modal Support */
+[data-theme='dark'] .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text);
+}
+
+[data-theme='dark'] .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+[data-theme='dark'] .modal-title {
+    color: var(--text);
+}
+
+/* Global Dark Mode Enforcement for Pages, Dropdowns, and Layouts */
+[data-theme="dark"] body,
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-light,
+[data-theme="dark"] .card,
+[data-theme="dark"] .list-group-item,
+[data-theme="dark"] .comment-card,
+[data-theme="dark"] .offcanvas {
+    background-color: var(--background-dark) !important;
+    background: var(--background-dark) !important;
+    color: #ffffff !important;
+}
+
+/* Explicitly target all dropdown menus */
+[data-theme="dark"] .dropdown-menu,
+[data-theme="dark"] .dropdown-menu.show {
+    background-color: var(--card-bg-dark) !important;
+    border-color: var(--border-dark) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus,
+[data-theme="dark"] .dropdown-item.active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .offcanvas-title,
+[data-theme="dark"] .offcanvas-body,
+[data-theme="dark"] .offcanvas-body p,
+[data-theme="dark"] .offcanvas-body .lead {
+    color: #ffffff !important;
+}
+
+/* Ensure Headers and paragraphs inside these containers are white */
+[data-theme="dark"] .dropdown-menu h6,
+[data-theme="dark"] .dropdown-menu span,
+[data-theme="dark"] .comment-card p,
+[data-theme="dark"] .comment-card h6 {
+    color: #ffffff !important;
+}
+
+/* Marquee Red Text */
+.marquee-red-text {
+    color: #ff0000;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}

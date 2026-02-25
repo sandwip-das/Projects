@@ -1,5 +1,5 @@
 from django import forms
-from .models import ServiceBooking, ContactMessage
+from .models import ServiceBooking, ContactMessage, Review
 
 TIME_CHOICES = [('', 'Select Time')] + [
     (f"{h % 24:02d}:{m:02d}", f"{12 if h % 12 == 0 else h % 12:d}:{m:02d} {'AM' if h < 12 or h == 24 else 'PM'}")
@@ -8,66 +8,73 @@ TIME_CHOICES = [('', 'Select Time')] + [
     if not (h == 24 and m == 30)
 ]
 
-class ServiceBookingForm(forms.ModelForm):
+class StyledFormMixin:
+    """Mixin to apply common styling to form fields."""
+    common_class = 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-gray-500 placeholder:text-xs placeholder:italic focus:outline-none focus:border-primary transition text-sm'
+    
+    def apply_styling(self):
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, (forms.TextInput, forms.EmailInput, forms.DateInput, forms.Textarea, forms.Select, forms.ChoiceField)):
+                existing_class = field.widget.attrs.get('class', '')
+                if not existing_class:
+                    field.widget.attrs['class'] = self.common_class
+                elif 'w-full' not in existing_class:
+                     field.widget.attrs['class'] = f"{self.common_class} {existing_class}"
+
+class ServiceBookingForm(StyledFormMixin, forms.ModelForm):
     preferred_time = forms.ChoiceField(
         choices=TIME_CHOICES,
-        widget=forms.Select(attrs={
-            'class': 'w-full bg-black border border-white/20 rounded-lg px-4 py-1.5 text-white focus:outline-none focus:border-primary transition text-sm cursor-pointer appearance-none',
-        })
+        widget=forms.Select()
     )
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.apply_styling()
+        # Specific overrides
+        self.fields['preferred_time'].widget.attrs['class'] = 'w-full bg-black border border-white/20 rounded-lg px-4 py-1.5 text-white focus:outline-none focus:border-primary transition text-sm cursor-pointer appearance-none'
+        self.fields['preferred_date'].widget = forms.DateInput(attrs={'type': 'date', 'style': 'color-scheme: dark;'})
+        self.apply_styling()
+
     class Meta:
         model = ServiceBooking
         fields = ['name', 'phone', 'email', 'preferred_date', 'preferred_time', 'additional_message']
         widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Your Full Name'
-            }),
-            'phone': forms.TextInput(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Your Phone Number'
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Your Email Address'
-            }),
-            'preferred_date': forms.DateInput(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'type': 'date',
-                'style': 'color-scheme: dark;' 
-            }),
-            'additional_message': forms.Textarea(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Additional Message',
-                'rows': 2
-            }),
+            'name': forms.TextInput(attrs={'placeholder': 'Your Full Name'}),
+            'phone': forms.TextInput(attrs={'placeholder': 'Your Phone Number'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Your Email Address'}),
+            'additional_message': forms.Textarea(attrs={'placeholder': 'Additional Message', 'rows': 2}),
         }
 
-class ContactForm(forms.ModelForm):
+class ContactForm(StyledFormMixin, forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.apply_styling()
+
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'phone', 'subject', 'message']
         widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Your Name'
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Your Email'
-            }),
-            'phone': forms.TextInput(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Your Phone Number'
-            }),
-            'subject': forms.TextInput(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1.5 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Subject'
-            }),
-            'message': forms.Textarea(attrs={
-                'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-white placeholder:text-white focus:outline-none focus:border-primary transition text-sm',
-                'placeholder': 'Your Message',
-                'rows': 4
-            }),
+            'name': forms.TextInput(attrs={'placeholder': 'Name'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Email'}),
+            'phone': forms.TextInput(attrs={'placeholder': 'Phone Number'}),
+            'subject': forms.TextInput(attrs={'placeholder': 'Topic'}),
+            'message': forms.Textarea(attrs={'placeholder': 'Message', 'rows': 4}),
+        }
+
+class ReviewForm(StyledFormMixin, forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.apply_styling()
+
+    class Meta:
+        model = Review
+        fields = ['name', 'email', 'profession', 'location', 'picture', 'rating', 'comment']
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Your Name', 'maxlength': '50'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Your Email'}),
+            'profession': forms.TextInput(attrs={'placeholder': 'Profession/ Company Name', 'maxlength': '50'}),
+            'location': forms.TextInput(attrs={'placeholder': 'Location/Address', 'maxlength': '50'}),
+            'picture': forms.FileInput(attrs={'class': 'w-full bg-white/5 border border-white/20 rounded-lg px-4 py-1 text-white focus:outline-none focus:border-primary transition text-sm'}),
+            'rating': forms.HiddenInput(),
+            'comment': forms.Textarea(attrs={'placeholder': 'Short comment', 'rows': 2, 'maxlength': '70'}),
         }
