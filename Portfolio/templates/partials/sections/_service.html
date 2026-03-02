@@ -85,40 +85,52 @@
             <!-- Name and Phone on one line -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-white mb-2">Full Name</label>
+                    <label class="block text-sm font-medium text-white mb-2">Full Name <span
+                            class="text-red-500">*</span></label>
                     {{ booking_form.name }}
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-white mb-2">Phone Number</label>
+                    <label class="block text-sm font-medium text-white mb-2">Phone Number <span
+                            class="text-red-500">*</span></label>
                     {{ booking_form.phone }}
                 </div>
             </div>
 
             <!-- Email on one line -->
             <div>
-                <label class="block text-sm font-medium text-white mb-2">Email Address</label>
+                <label class="block text-sm font-medium text-white mb-2">Email Address <span
+                        class="text-red-500">*</span></label>
                 {{ booking_form.email }}
             </div>
 
-            <!-- Preferred Date and Time on one line -->
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-white mb-2">Preferred Date</label>
-                    {{ booking_form.preferred_date }}
+            <!-- Preferred Date Range -->
+            <div>
+                <label class="block text-sm font-medium text-white mb-2">Preferred Date <span
+                        class="text-red-500">*</span></label>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 shrink-0">From <span class="text-red-500">*</span>:</span>
+                        {{ booking_form.date_from }}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 shrink-0">To <span class="text-red-500">*</span>:</span>
+                        {{ booking_form.date_to }}
+                    </div>
                 </div>
-                <div>
-                    <div class="relative">
-                        <label class="block text-sm font-medium text-white mb-[5px]">Preferred Time</label>
-                        <div class="relative">
-                            {{ booking_form.preferred_time }}
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg class="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
+            </div>
+
+            <!-- Preferred Time Range -->
+            <div>
+                <label class="block text-sm font-medium text-white mb-2">Preferred Time <span
+                        class="text-red-500">*</span></label>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 shrink-0">From <span class="text-red-500">*</span>:</span>
+                        {{ booking_form.time_from }}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 shrink-0">To <span class="text-red-500">*</span>:</span>
+                        {{ booking_form.time_to }}
                     </div>
                 </div>
             </div>

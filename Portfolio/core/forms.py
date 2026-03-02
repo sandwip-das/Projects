@@ -22,22 +22,20 @@ class StyledFormMixin:
                      field.widget.attrs['class'] = f"{self.common_class} {existing_class}"
 
 class ServiceBookingForm(StyledFormMixin, forms.ModelForm):
-    preferred_time = forms.ChoiceField(
-        choices=TIME_CHOICES,
-        widget=forms.Select()
-    )
-    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.apply_styling()
-        # Specific overrides
-        self.fields['preferred_time'].widget.attrs['class'] = 'w-full bg-black border border-white/20 rounded-lg px-4 py-1.5 text-white focus:outline-none focus:border-primary transition text-sm cursor-pointer appearance-none'
-        self.fields['preferred_date'].widget = forms.DateInput(attrs={'type': 'date', 'style': 'color-scheme: dark;'})
+        # Specific overrides for HTML5 pickers
+        picker_style = 'color-scheme: dark;'
+        self.fields['date_from'].widget = forms.DateInput(attrs={'type': 'date', 'style': picker_style, 'class': self.common_class.replace('px-4', 'px-2')})
+        self.fields['date_to'].widget = forms.DateInput(attrs={'type': 'date', 'style': picker_style, 'class': self.common_class.replace('px-4', 'px-2')})
+        self.fields['time_from'].widget = forms.TimeInput(attrs={'type': 'time', 'style': picker_style, 'class': self.common_class.replace('px-4', 'px-2')})
+        self.fields['time_to'].widget = forms.TimeInput(attrs={'type': 'time', 'style': picker_style, 'class': self.common_class.replace('px-4', 'px-2')})
         self.apply_styling()
 
     class Meta:
         model = ServiceBooking
-        fields = ['name', 'phone', 'email', 'preferred_date', 'preferred_time', 'additional_message']
+        fields = ['name', 'phone', 'email', 'date_from', 'date_to', 'time_from', 'time_to', 'additional_message']
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Your Full Name'}),
             'phone': forms.TextInput(attrs={'placeholder': 'Your Phone Number'}),

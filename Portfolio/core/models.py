@@ -1,3 +1,5 @@
+from django.utils import timezone
+import datetime
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from ckeditor.fields import RichTextField
@@ -10,7 +12,22 @@ from django.core.cache import cache
 import random
 
 from allauth.account.signals import user_signed_up
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+
+@receiver(pre_delete, sender=User)
+def clean_user_data(sender, instance, **kwargs):
+    """
+    Ensures a Hard Delete:
+    When a user is deleted from the admin panel, we wipe all caches and 
+    related data to ensure they must go through the full verification process again.
+    """
+    # 1. Clear any OTP or Registration caches for this email
+    cache.delete(f"otp_{instance.email}")
+    cache.delete(f"reg_otp_{instance.email}")
+    
+    # 2. Delete any hanging PendingRegistration records
+    PendingRegistration.objects.filter(email=instance.email).delete()
 
 class UserManagement(User):
     class Meta:
@@ -23,6 +40,7 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(upload_to='profiles/', default='default_profile.png', blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
     profession = models.CharField(max_length=100, blank=True, null=True)
+    organization = models.CharField(max_length=100, blank=True, null=True)
     interest_field = models.CharField(max_length=100, blank=True, null=True)
     highest_degree = models.CharField(max_length=100, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
@@ -92,8 +110,10 @@ class SingletonModel(models.Model):
 
 class HomeSettings(SingletonModel):
     # Site Config
-    site_title = models.CharField(max_length=100, default="Portfolio")
-    logo = models.ImageField(upload_to='core/site/', blank=True, help_text="Upload your logo here")
+    site_title = models.CharField(max_length=100, default="Portfolio", help_text="Shown in the browser tab")
+    nav_name = models.CharField(max_length=100, default="Portfolio", help_text="The name shown in the navigation bar")
+    
+    logo = models.ImageField(upload_to='core/site/', blank=True, help_text="The main logo of the site")
     favicon = models.ImageField(upload_to='core/site/', blank=True)
     
     # Hero Section
@@ -275,8 +295,10 @@ class ServiceBooking(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-    preferred_date = models.DateField(null=True, blank=True)
-    preferred_time = models.TimeField()
+    date_from = models.DateField(default=datetime.date.today, verbose_name="Start Date")
+    date_to = models.DateField(default=datetime.date.today, verbose_name="End Date")
+    time_from = models.TimeField(default=datetime.time(9, 0), verbose_name="Start Time")
+    time_to = models.TimeField(default=datetime.time(10, 0), verbose_name="End Time")
     additional_message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

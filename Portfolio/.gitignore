@@ -1,0 +1,8 @@
+venv/
+.venv/
+.venv_old/
+.env
+db.sqlite3
+.idea/
+__pycache__/
+*.pyc

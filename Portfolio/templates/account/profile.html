@@ -23,8 +23,11 @@
                     {% else %}
                     <div
                         class="w-24 h-24 rounded-full bg-gradient-to-br from-[#2ecc71] to-blue-500 flex items-center justify-center text-white font-bold text-3xl border-4 border-[#2ecc71]/50 group-hover:border-[#2ecc71] transition-colors">
-                        {% if user.first_name %}{{ user.first_name|make_list|first|upper }}{% else %}{{
-                        user.username|make_list|first|upper }}{% endif %}
+                        {% if user.first_name %}
+                        {{ user.first_name|make_list|first|upper }}
+                        {% else %}
+                        {{ user.username|make_list|first|upper }}
+                        {% endif %}
                     </div>
                     {% endif %}
 
@@ -40,8 +43,8 @@
 
                 <!-- Heading -->
                 <div>
-                    <h2 class="text-2xl font-extrabold text-white mb-0">Profile Management</h2>
-                    <p class="text-gray-400 text-xs text-left">Manage your personal information</p>
+                    <h2 class="text-2xl font-extrabold text-white mb-0">{{ user.username }}</h2>
+                    <p class="text-gray-400 text-xs text-left">{{ user.email }}</p>
                 </div>
             </div>
 
@@ -64,16 +67,12 @@
                     <table class="w-full text-sm">
                         <tbody class="divide-y divide-white/5">
                             <tr>
-                                <td class="py-2 pr-4 font-medium text-white w-1/3">Full Name</td>
-                                <td class="py-2 text-white">{{ user.get_full_name|default:'Not provided' }}</td>
+                                <td class="py-2 pr-4 font-medium text-white w-1/3">User Name</td>
+                                <td class="py-2 text-white font-bold text-[#2ecc71]">{{ user.username }}</td>
                             </tr>
                             <tr>
                                 <td class="py-2 pr-4 font-medium text-white">Email Address</td>
                                 <td class="py-2 text-white">{{ user.email }}</td>
-                            </tr>
-                            <tr>
-                                <td class="py-2 pr-4 font-medium text-white">Username</td>
-                                <td class="py-2 text-white">@{{ user.username }}</td>
                             </tr>
                             <tr>
                                 <td class="py-2 pr-4 font-medium text-white">Contact Number</td>
@@ -85,17 +84,21 @@
                                 <td class="py-2 text-white">{{ user.profile.profession|default:'Not provided' }}</td>
                             </tr>
                             <tr>
+                                <td class="py-2 pr-4 font-medium text-white">Organization</td>
+                                <td class="py-2 text-white">{{ user.profile.organization|default:'Not provided' }}</td>
+                            </tr>
+                            <tr>
                                 <td class="py-2 pr-4 font-medium text-white">Interest Field</td>
                                 <td class="py-2 text-white">{{ user.profile.interest_field|default:'Not provided' }}
                                 </td>
                             </tr>
                             <tr>
-                                <td class="py-2 pr-4 font-medium text-white">Highest Degree</td>
+                                <td class="py-2 pr-4 font-medium text-white">Educational Qualification</td>
                                 <td class="py-2 text-white">{{ user.profile.highest_degree|default:'Not provided' }}
                                 </td>
                             </tr>
                             <tr>
-                                <td class="py-2 pr-4 font-medium text-white">Location</td>
+                                <td class="py-2 pr-4 font-medium text-white">Address</td>
                                 <td class="py-2 text-white">{{ user.profile.location|default:'Not provided' }}</td>
                             </tr>
                         </tbody>
@@ -108,30 +111,24 @@
             <div id="content-edit-profile" class="hidden">
                 <div class="mb-3 flex flex-col md:flex-row gap-5">
                     <div class="w-full">
-                        <label class="block text-sm font-medium text-white mb-2">Full Name</label>
+                        <label class="block text-sm font-medium text-white mb-2">User Name</label>
                         <div class="relative">
-                            <input type="text" name="full_name" value="{{ user.get_full_name }}"
-                                class="w-full bg-[#1e1e2d] border border-white/10 rounded-lg py-1.5 px-3 text-white focus:outline-none focus:border-[#2ecc71] focus:ring-1 focus:ring-[#2ecc71] transition-colors placeholder:text-[12px] placeholder:italic"
-                                placeholder="Enter your full name">
+                            <input type="text" name="username" value="{{ user.username }}"
+                                class="w-full bg-[#1e1e2d] border border-[#2ecc71]/30 rounded-lg py-1.5 px-3 text-white focus:outline-none focus:border-[#2ecc71] focus:ring-1 focus:ring-[#2ecc71] transition-colors placeholder:text-[12px] placeholder:italic"
+                                placeholder="Your username">
                         </div>
                     </div>
                     <div class="w-full">
-                        <label class="block text-sm font-medium text-white mb-2">Email Address</label>
+                        <label class="block text-sm font-medium text-white mb-2">Email Address <span
+                                class="text-xs text-gray-500 font-normal ml-1">(locked)</span></label>
                         <div class="relative">
                             <input type="email" value="{{ user.email }}" disabled
-                                class="w-full bg-[#1e1e2d] border border-white/10 rounded-lg py-1.5 px-3 text-white cursor-not-allowed">
+                                class="w-full bg-[#1e1e2d] border border-white/10 rounded-lg py-1.5 px-3 text-white cursor-not-allowed opacity-60">
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3 flex flex-col md:flex-row gap-5">
-                    <div class="w-full">
-                        <label class="block text-sm font-medium text-white mb-2">Username</label>
-                        <div class="relative">
-                            <input type="text" value="{{ user.username }}" disabled
-                                class="w-full bg-[#1e1e2d] border border-white/10 rounded-lg py-1.5 px-3 text-white cursor-not-allowed">
-                        </div>
-                    </div>
                     <div class="w-full">
                         <label class="block text-sm font-medium text-white mb-2">Contact Number</label>
                         <div class="relative">
@@ -141,15 +138,23 @@
                                 placeholder="Contact Number">
                         </div>
                     </div>
-                </div>
-
-                <div class="mb-3 flex flex-col md:flex-row gap-5">
                     <div class="w-full">
                         <label class="block text-sm font-medium text-white mb-2">Profession</label>
                         <div class="relative">
                             <input type="text" name="profession" value="{{ profile.profession|default_if_none:'' }}"
                                 class="w-full bg-[#1e1e2d] border border-white/10 rounded-lg py-1.5 px-3 text-white focus:outline-none focus:border-[#2ecc71] focus:ring-1 focus:ring-[#2ecc71] transition-colors placeholder:text-[12px] placeholder:italic"
-                                placeholder="Profession">
+                                placeholder="Job/Study/Bussiness">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3 flex flex-col md:flex-row gap-5">
+                    <div class="w-full">
+                        <label class="block text-sm font-medium text-white mb-2">Organization</label>
+                        <div class="relative">
+                            <input type="text" name="organization" value="{{ profile.organization|default_if_none:'' }}"
+                                class="w-full bg-[#1e1e2d] border border-white/10 rounded-lg py-1.5 px-3 text-white focus:outline-none focus:border-[#2ecc71] focus:ring-1 focus:ring-[#2ecc71] transition-colors placeholder:text-[12px] placeholder:italic"
+                                placeholder="Organization/Institutions">
                         </div>
                     </div>
                     <div class="w-full">
@@ -174,11 +179,11 @@
                         </div>
                     </div>
                     <div class="w-full">
-                        <label class="block text-sm font-medium text-white mb-2">Location</label>
+                        <label class="block text-sm font-medium text-white mb-2">Address</label>
                         <div class="relative">
                             <input type="text" name="location" value="{{ profile.location|default_if_none:'' }}"
                                 class="w-full bg-[#1e1e2d] border border-white/10 rounded-lg py-1.5 px-3 text-white focus:outline-none focus:border-[#2ecc71] focus:ring-1 focus:ring-[#2ecc71] transition-colors placeholder:text-[12px] placeholder:italic"
-                                placeholder="Hometown, Country">
+                                placeholder="Neighborhoods / Hometown, Country">
                         </div>
                     </div>
                 </div>
@@ -193,12 +198,7 @@
 
             </div>
         </form>
-        <div class="mt-4 border-t border-white/10 pt-2 flex justify-center">
-            <a href="{% url 'home' %}#blog"
-                class="px-4 py-2 rounded-full border border-white/20 bg-transparent text-white text-xs font-medium hover:border-[#00a8ff] hover:text-[#00a8ff] transition-all duration-300 flex items-center gap-2 shadow-sm hover:shadow-[0_0_15px_rgba(0,168,255,0.4)] group">
-                <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Home
-            </a>
-        </div>
+
     </div>
 </div>
 

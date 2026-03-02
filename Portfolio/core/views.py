@@ -31,7 +31,7 @@ def home(request):
                     booking.save()
                     
                     subject = f"New Service Booking: {service.title} from {booking.name}"
-                    body = f"New booking request received:\n\nService: {service.title}\nName: {booking.name}\nPhone: {booking.phone}\nEmail: {booking.email}\nDate: {booking.preferred_date}\nTime: {booking.preferred_time}\nMessage: {booking.additional_message}"
+                    body = f"New booking request received:\n\nService: {service.title}\nName: {booking.name}\nPhone: {booking.phone}\nEmail: {booking.email}\nDate: {booking.date_from} to {booking.date_to}\nTime: {booking.time_from} to {booking.time_to}\nMessage: {booking.additional_message}"
                     send_portfolio_email(subject, body, to_email=admin_email, reply_to=booking.email)
                     
                     if is_ajax:
@@ -248,24 +248,17 @@ def delete_comment(request, comment_id):
 def edit_profile(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
-        if full_name is not None:
-            full_name = full_name.strip()
-            # Update first/last names from Full Name field
-            if full_name:
-                name_parts = full_name.split(' ', 1)
-                request.user.first_name = name_parts[0]
-                if len(name_parts) > 1:
-                    request.user.last_name = name_parts[1]
-                else:
-                    request.user.last_name = ''
-            else:
-                request.user.first_name = ''
-                request.user.last_name = ''
+        new_username = request.POST.get('username', '').strip()
+        if new_username and new_username != request.user.username:
+            if User.objects.filter(username=new_username).exclude(pk=request.user.pk).exists():
+                messages.error(request, f"The username '{new_username}' is already taken. Please choose another.")
+                return redirect('edit_profile')
+            request.user.username = new_username
             request.user.save()
-            
+
         profile.contact_number = request.POST.get('contact_number', profile.contact_number)
         profile.profession = request.POST.get('profession', profile.profession)
+        profile.organization = request.POST.get('organization', profile.organization)
         profile.interest_field = request.POST.get('interest_field', profile.interest_field)
         profile.highest_degree = request.POST.get('highest_degree', profile.highest_degree)
         profile.location = request.POST.get('location', profile.location)
@@ -332,58 +325,44 @@ def custom_signup(request):
         return redirect('home')
         
     if request.method == 'POST':
-        full_name = request.POST.get('full_name', '').strip()
+        username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip()
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
         profile_picture = request.FILES.get('profile_picture')
 
+        if not username:
+            messages.error(request, "Please enter a username.")
+            return render(request, 'account/signup.html', {'form_data': request.POST})
+
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
             return render(request, 'account/signup.html', {'form_data': request.POST})
-        
-        if ' ' in full_name:
-            messages.error(request, "Spaces are not allowed in User Names. Please use a hyphen for two words (e.g., Name-Surname).")
-            return render(request, 'account/signup.html', {'form_data': request.POST})
-            
-        words = full_name.split('-')
-        if len(words) > 2:
-            messages.error(request, "User Name cannot exceed two words.")
-            return render(request, 'account/signup.html', {'form_data': request.POST})
-            
-        username = full_name
-        
-        # 1. Check Username Availability (User + Pending)
-        user_exists = User.objects.filter(username=username).exists()
-        pending_username_exists = PendingRegistration.objects.filter(username=username).exclude(email=email).exists()
-        
-        if user_exists or pending_username_exists:
-            messages.error(request, f"User Name '{username}' already exists.")
+
+        # Check Email Availability (only active users count)
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "The email ID already exists. Please try with another email ID.")
             return render(request, 'account/signup.html', {'form_data': request.POST})
 
-        # 2. Check Email Availability (User + Pending)
-        email_exists = User.objects.filter(email=email).exists()
-        pending_email_exists = PendingRegistration.objects.filter(email=email).exists()
+        # If username is taken, make it unique by appending a short suffix
+        base_username = username
+        final_username = base_username
+        counter = 1
+        while User.objects.filter(username=final_username).exists() or PendingRegistration.objects.filter(username=final_username).exists():
+            final_username = f"{base_username}{counter}"
+            counter += 1
 
-        if email_exists:
-            messages.error(request, "This Email already exists.")
-            return render(request, 'account/signup.html', {'form_data': request.POST})
-        
-        if pending_email_exists:
-            # If it's only in pending, we can overwrite it (user might be retrying)
-            PendingRegistration.objects.filter(email=email).delete()
-
-        # Clean existing pending for same email to avoid duplicates
+        # Clean any pending registrations for the same email
         PendingRegistration.objects.filter(email=email).delete()
 
         token = str(uuid.uuid4())
         hashed_password = make_password(password1)
         
         pending = PendingRegistration(
-            username=username,
+            username=final_username,
             email=email,
             password=hashed_password,
-            full_name=full_name,
+            full_name=username,
             token=token
         )
         if profile_picture:
@@ -391,61 +370,97 @@ def custom_signup(request):
         pending.save()
 
         # Send Verification Email
-        verify_url = request.build_absolute_uri(reverse('verify_registration', args=[token]))
+        otp = str(random.randint(100000, 999999))
+        cache.set(f"reg_otp_{email}", otp, timeout=120)
+
         subject = "Action Required: Verify Your Portfolio Account"
-        body = f"""
-Hello {full_name},
+        body = f"""Hello {username},
 
-Thank you for registering. To complete your account creation, please click the link below to verify your email.
+Thank you for registering. Your OTP for account verification is {otp}. It is valid for 2 minutes.
 
-Verification Link (Valid for 2 minutes):
-{verify_url}
-
-If you do not verify within 2 minutes, the link will expire and you will need to register again.
+If the OTP expires, you can request a new one on the verification page.
 
 Best regards,
 Sandwip Das Portfolio
 """
         send_portfolio_email(subject, body, to_email=email)
         
-        return render(request, 'account/signup_pending.html', {'email': email})
+        return render(request, 'account/verify_registration_otp.html', {'email': email})
 
     return render(request, 'account/signup.html')
 
-def verify_registration(request, token):
-    pending = get_object_or_404(PendingRegistration, token=token)
-    
-    if pending.is_expired():
-        pending.delete()
-        messages.error(request, "The verification link has expired (2-minute limit). Please register again.")
+def verify_registration_otp(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        otp = request.POST.get("otp")
+        cached_otp = cache.get(f"reg_otp_{email}")
+        
+        if cached_otp and cached_otp == otp:
+            cache.delete(f"reg_otp_{email}")
+            
+            pending = get_object_or_404(PendingRegistration, email=email)
+            
+            with transaction.atomic():
+                user = User.objects.create(
+                    username=pending.username,
+                    email=pending.email,
+                    password=pending.password
+                )
+                user.first_name = ""
+                user.last_name = ""
+                user.save()
+
+                if pending.profile_picture:
+                    user.profile.profile_picture.save(
+                        pending.profile_picture.name.split('/')[-1],
+                        pending.profile_picture,
+                        save=True
+                    )
+                else:
+                    user.profile.save()
+
+                pending.delete()
+            
+            from django.contrib.auth import login
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            messages.success(request, "Registration Successful! Welcome to your blog.")
+            return redirect('my_blog')
+            
+        messages.error(request, "Invalid or expired OTP.")
+        return render(request, "account/verify_registration_otp.html", {"email": email})
+    return redirect('account_signup')
+
+def resend_registration_otp(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        if PendingRegistration.objects.filter(email=email).exists():
+            otp = str(random.randint(100000, 999999))
+            cache.set(f"reg_otp_{email}", otp, timeout=120)
+            
+            subject = "Action Required: Verify Your Portfolio Account"
+            body = f"Your new OTP for registration is {otp}. It is valid for 2 minutes."
+            send_portfolio_email(subject, body, to_email=email)
+            return JsonResponse({"status": "success", "message": "OTP resent successfully."})
+        return JsonResponse({"status": "error", "message": "Pending registration not found."}, status=400)
+    return redirect('account_signup')
+
+def resend_forgot_password_otp(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        if email:
+            user = User.objects.filter(email=email).first()
+            if user:
+                otp = str(random.randint(100000, 999999))
+                cache.set(f"otp_{email}", otp, timeout=120)
+                subject = "Password Reset OTP"
+                message = f"Your new OTP for password reset is {otp}. It is valid for 2 minutes."
+                send_portfolio_email(subject, message, to_email=email)
+                return JsonResponse({"status": "success", "message": "OTP resent successfully."})
+        return JsonResponse({"status": "error", "message": "Email not found."}, status=400)
+    return redirect('send_otp')
+
+def my_blog(request):
+    if not request.user.is_authenticated:
         return redirect('account_signup')
-
-    with transaction.atomic():
-        # Create User
-        user = User.objects.create(
-            username=pending.username,
-            email=pending.email,
-            password=pending.password
-        )
-        
-        # Names are initially blank
-        user.first_name = ""
-        user.last_name = ""
-        user.save()
-
-        # Update Profile
-        if pending.profile_picture:
-            # This ensures the image is moved to the correct 'profiles/' directory
-            user.profile.profile_picture.save(
-                pending.profile_picture.name.split('/')[-1],
-                pending.profile_picture,
-                save=True
-            )
-        else:
-            user.profile.save()
-
-        # Cleanup
-        pending.delete()
-        
-    messages.success(request, "Your account has been verified successfully! Please log in now.")
-    return redirect('account_login')
+    blog_posts = BlogPost.objects.all().order_by('-created_at')
+    return render(request, 'my_blog.html', {'blog_posts': blog_posts})

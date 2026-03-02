@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import home, blog_detail, custom_signup, verify_registration
+from core.views import home, blog_detail, custom_signup, verify_registration_otp
 
 # Admin Customization
 admin.site.site_header = "My Portfolio administration"
@@ -21,7 +21,7 @@ urlpatterns = [
     path('accounts/signup/', include([
         path('', custom_signup, name='account_signup'),
     ])),
-    path('accounts/verify/<str:token>/', verify_registration, name='verify_registration'),
+    path('accounts/verify-registration-otp/', verify_registration_otp, name='verify_registration_otp'),
     
     path('accounts/', include('allauth.urls')),
     path('core/', include('core.urls')),

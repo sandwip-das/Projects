@@ -43,7 +43,7 @@ class NavbarMenuInline(admin.TabularInline):
 # 1. Navbar Content
 @admin.register(NavbarSettings)
 class NavbarSettingsAdmin(BaseSettingsAdmin):
-    fields = ['site_title', 'logo', 'favicon']
+    fields = ['site_title', 'nav_name', 'logo', 'favicon']
     inlines = [NavbarMenuInline]
 
 # 2. Hero Section Content
@@ -329,9 +329,28 @@ class FooterSettingsAdmin(BaseSettingsAdmin):
 # User Submissions
 @admin.register(ServiceBooking)
 class ServiceBookingAdmin(admin.ModelAdmin):
-    list_display = ['name', 'service', 'email', 'preferred_date', 'created_at']
-    list_filter = ['service', 'preferred_date']
+    list_display = ['name', 'service', 'date_from', 'date_to', 'time_from', 'time_to', 'created_at']
+    list_filter = ['service', 'date_from', 'created_at']
     readonly_fields = ['created_at']
+    
+    fieldsets = (
+        ('Customer Information', {
+            'fields': ('name', 'email', 'phone')
+        }),
+        ('Booking Details', {
+            'fields': ('service', 'additional_message')
+        }),
+        ('Date Range', {
+            'fields': (('date_from', 'date_to'),)
+        }),
+        ('Time Range', {
+            'fields': (('time_from', 'time_to'),)
+        }),
+        ('Metadata', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):

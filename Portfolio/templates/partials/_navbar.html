@@ -1,26 +1,32 @@
 <!-- Navbar -->
+{% load static %}
 <nav class="fixed w-full z-50 bg-dark/90 backdrop-blur-lg border-b border-white/10">
     <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
         <div class="flex items-center justify-between h-12 md:h-14 transition-all duration-300">
             <!-- Logo / Name -->
             <div class="flex-1 flex items-center overflow-hidden mr-4">
                 <a href="{% url 'home' %}"
-                    class="font-bold tracking-tight hover:text-primary transition-all duration-300 font-script group block">
-                    {% if settings.logo %}
-                    <img class="h-7 sm:h-9 w-auto" src="{{ settings.logo.url }}" alt="{{ settings.site_title }}">
-                    {% else %}
+                    class="font-bold tracking-tight hover:text-primary transition-all duration-300 font-script group flex items-center gap-2">
+                    <img class="h-6 sm:h-8 w-auto rounded-lg"
+                        src="{% if settings.logo %}{{ settings.logo.url }}{% else %}{% static 'img/logo_placeholder.png' %}{% endif %}"
+                        alt="Logo">
+
                     <span
                         class="gradient-text group-hover:scale-105 inline-block transition transform whitespace-nowrap text-sm sm:text-lg md:text-2xl">
-                        {{ settings.site_title }}
+                        {{ settings.nav_name|default:settings.site_title }}
                     </span>
-                    {% endif %}
                 </a>
             </div>
 
             <!-- Desktop Menu -->
             <div class="hidden md:block">
                 <div class="ml-6 flex items-center space-x-4 lg:space-x-6">
-                    {% if '/blog/' not in request.path and '/profile/' not in request.path %}
+                    {% if '/blog/' in request.path or '/profile/' in request.path or '/my-blog/' in request.path %}
+                    <a href="{% url 'home' %}"
+                        class="nav-link text-xs lg:text-sm font-bold hover:text-primary transition-colors">Home</a>
+                    <a href="{% url 'home' %}#blog"
+                        class="nav-link text-xs lg:text-sm font-bold hover:text-primary transition-colors">My Blog</a>
+                    {% else %}
                     <a href="#home"
                         class="nav-link text-xs lg:text-sm font-bold hover:text-primary transition-colors">Home</a>
                     <a href="#about"
@@ -96,13 +102,19 @@
     <div class="hidden md:hidden overflow-hidden transition-all duration-500 ease-in-out bg-dark/95 backdrop-blur-xl border-b border-white/10"
         id="mobile-menu">
         <div class="px-2 pt-2 pb-4 space-y-1">
-            {% if '/blog/' not in request.path and '/profile/' not in request.path %}
+            {% if '/blog/' in request.path or '/profile/' in request.path or '/my-blog/' in request.path %}
+            <a href="{% url 'home' %}"
+                class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">Home</a>
+            <a href="{% url 'home' %}#blog"
+                class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">My
+                Blog</a>
+            {% else %}
             <a href="#home" onclick="toggleMobileMenu()"
                 class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">Home</a>
             <a href="#about" onclick="toggleMobileMenu()"
                 class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">About</a>
             <a href="#experience" onclick="toggleMobileMenu()"
-                class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">Experience</a>
+                class="block px-3 py-2 rounded-xl text-base font-boldtext-gray-300 hover:text-primary hover:bg-white/5 transition-all">Experience</a>
             <a href="#skills" onclick="toggleMobileMenu()"
                 class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">Expertise</a>
             <a href="#projects" onclick="toggleMobileMenu()"
@@ -114,34 +126,34 @@
             <a href="#contact" onclick="toggleMobileMenu()"
                 class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">Contact</a>
             {% endif %}
-            {% if user.is_authenticated %}
-            <div class="border-t border-white/10 mt-4 pt-4">
-                <div class="px-3 flex items-center space-x-3 mb-4">
-                    {% if user.profile.profile_picture.name != 'default_profile.png' %}
-                    <img src="{{ user.profile.profile_picture.url }}" alt="P"
-                        class="h-10 w-10 rounded-full object-cover border border-[#2ecc71]">
-                    {% else %}
-                    <div
-                        class="h-10 w-10 rounded-full bg-gradient-to-br from-[#2ecc71] to-blue-500 flex items-center justify-center text-white font-bold text-lg border border-[#2ecc71]">
-                        {{ user.username|slice:":1"|upper }}
-                    </div>
-                    {% endif %}
-                    <span class="font-bold text-gray-200 block truncate">
-                        {{ user.username }}
-                    </span>
-                </div>
-                <a href="{% url 'edit_profile' %}" onclick="toggleMobileMenu()"
-                    class="block px-3 py-2 text-base font-bold text-[#2ecc71] hover:text-white hover:bg-white/5 rounded-xl transition-all"><i
-                        class="fas fa-user-circle w-6"></i> Profile</a>
-                <form method="post" action="{% url 'account_logout' %}" class="m-0 block">
-                    {% csrf_token %}
-                    <button type="submit"
-                        class="w-full text-left px-3 py-2 text-base font-bold text-red-400 hover:text-red-300 hover:bg-white/5 rounded-xl transition-all"><i
-                            class="fas fa-sign-out-alt w-6"></i> Log Out</button>
-                </form>
-            </div>
-            {% endif %}
         </div>
+        {% if user.is_authenticated %}
+        <div class="border-t border-white/10 mt-4 pt-4">
+            <div class="px-3 flex items-center space-x-3 mb-4">
+                {% if user.profile.profile_picture.name != 'default_profile.png' %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="P"
+                    class="h-10 w-10 rounded-full object-cover border border-[#2ecc71]">
+                {% else %}
+                <div
+                    class="h-10 w-10 rounded-full bg-gradient-to-br from-[#2ecc71] to-blue-500 flex items-center justify-center text-white font-bold text-lg border border-[#2ecc71]">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                {% endif %}
+                <span class="font-bold text-gray-200 block truncate">
+                    {{ user.username }}
+                </span>
+            </div>
+            <a href="{% url 'edit_profile' %}" onclick="toggleMobileMenu()"
+                class="block px-3 py-2 text-base font-bold text-[#2ecc71] hover:text-white hover:bg-white/5 rounded-xl transition-all"><i
+                    class="fas fa-user-circle w-6"></i> Profile</a>
+            <form method="post" action="{% url 'account_logout' %}" class="m-0 block">
+                {% csrf_token %}
+                <button type="submit"
+                    class="w-full text-left px-3 py-2 text-base font-bold text-red-400 hover:text-red-300 hover:bg-white/5 rounded-xl transition-all"><i
+                        class="fas fa-sign-out-alt w-6"></i> Log Out</button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 </nav>
 
