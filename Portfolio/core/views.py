@@ -30,9 +30,23 @@ def home(request):
                     booking.service = service
                     booking.save()
                     
+                    # Date and time formatting
+                    if booking.date_from == booking.date_to:
+                        booking_date = booking.date_from.strftime('%d-%b-%y')
+                    else:
+                        booking_date = f"{booking.date_from.strftime('%d-%b-%y')} to {booking.date_to.strftime('%d-%b-%y')}"
+                    
+                    booking_time = f"{booking.time_from.strftime('%I:%M %p')} to {booking.time_to.strftime('%I:%M %p')}"
+
+                    # 1. Notify Admin
                     subject = f"New Service Booking: {service.title} from {booking.name}"
-                    body = f"New booking request received:\n\nService: {service.title}\nName: {booking.name}\nPhone: {booking.phone}\nEmail: {booking.email}\nDate: {booking.date_from} to {booking.date_to}\nTime: {booking.time_from} to {booking.time_to}\nMessage: {booking.additional_message}"
+                    body = f"New booking request received:\n\nService: {service.title}\nName: {booking.name}\nPhone: {booking.phone}\nEmail: {booking.email}\nDate: {booking_date}\nTime: {booking_time}\nMessage: {booking.additional_message}\n\nReview this in the admin panel: {request.build_absolute_uri(reverse('admin:core_servicebooking_changelist'))}"
                     send_portfolio_email(subject, body, to_email=admin_email, reply_to=booking.email)
+
+                    # 2. Acknowledgment to User
+                    user_subject = f"Booking Request Received: {service.title}"
+                    user_body = f"Hello {booking.name},\n\nWe have successfully received your booking request for '{service.title}' on {booking_date} at {booking_time}.\n\nYour request is currently under review. You will receive a confirmation email once it is approved.\n\nBest regards,\nPortfolio Team"
+                    send_portfolio_email(user_subject, user_body, to_email=booking.email)
                     
                     if is_ajax:
                         return JsonResponse({'status': 'success', 'message': "Your booking request has been submitted successfully!"})

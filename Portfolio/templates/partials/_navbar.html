@@ -24,7 +24,7 @@
                     {% if '/blog/' in request.path or '/profile/' in request.path or '/my-blog/' in request.path %}
                     <a href="{% url 'home' %}"
                         class="nav-link text-xs lg:text-sm font-bold hover:text-primary transition-colors">Home</a>
-                    <a href="{% url 'home' %}#blog"
+                    <a href="{% url 'my_blog' %}"
                         class="nav-link text-xs lg:text-sm font-bold hover:text-primary transition-colors">My Blog</a>
                     {% else %}
                     <a href="#home"
@@ -105,7 +105,7 @@
             {% if '/blog/' in request.path or '/profile/' in request.path or '/my-blog/' in request.path %}
             <a href="{% url 'home' %}"
                 class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">Home</a>
-            <a href="{% url 'home' %}#blog"
+            <a href="{% url 'my_blog' %}"
                 class="block px-3 py-2 rounded-xl text-base font-bold text-gray-300 hover:text-primary hover:bg-white/5 transition-all">My
                 Blog</a>
             {% else %}

@@ -300,6 +300,12 @@ class ServiceBooking(models.Model):
     time_from = models.TimeField(default=datetime.time(9, 0), verbose_name="Start Time")
     time_to = models.TimeField(default=datetime.time(10, 0), verbose_name="End Time")
     additional_message = models.TextField(blank=True)
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('cancelled', 'Cancelled'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

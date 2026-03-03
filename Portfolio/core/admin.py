@@ -3,7 +3,7 @@ from django import forms
 from django.db import models
 from django.utils.html import format_html
 from django.urls import path, reverse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from nested_admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 from .models import (
@@ -329,16 +329,161 @@ class FooterSettingsAdmin(BaseSettingsAdmin):
 # User Submissions
 @admin.register(ServiceBooking)
 class ServiceBookingAdmin(admin.ModelAdmin):
-    list_display = ['name', 'service', 'date_from', 'date_to', 'time_from', 'time_to', 'created_at']
-    list_filter = ['service', 'date_from', 'created_at']
+    list_display = ['name', 'service', 'formatted_date', 'formatted_time', 'conflict_check', 'booking_status']
+    list_filter = ['status', 'service', 'date_from', 'created_at']
     readonly_fields = ['created_at']
+    
+    def formatted_date(self, obj):
+        if obj.date_from == obj.date_to:
+            return obj.date_from.strftime('%d-%b-%y')
+        return f"{obj.date_from.strftime('%d-%b-%y')} - {obj.date_to.strftime('%d-%b-%y')}"
+    formatted_date.short_description = "Date Range"
+    formatted_date.admin_order_field = 'date_from'
+
+    def formatted_time(self, obj):
+        return f"{obj.time_from.strftime('%I:%M %p')} - {obj.time_to.strftime('%I:%M %p')}"
+    formatted_time.short_description = "Time"
+    formatted_time.admin_order_field = 'time_from'
+
+    def conflict_check(self, obj):
+        # Check for overlapping bookings in the same service at the same time
+        conflicts = ServiceBooking.objects.filter(
+            service=obj.service,
+            date_from=obj.date_from,
+            status__in=['pending', 'accepted']
+        ).exclude(id=obj.id)
+        
+        # Check for time overlap
+        overlap_count = 0
+        for conflict in conflicts:
+            if not (obj.time_to <= conflict.time_from or obj.time_from >= conflict.time_to):
+                overlap_count += 1
+        
+        if overlap_count > 0:
+            total_at_slot = overlap_count + 1
+            return format_html('<span style="color: #ff4757; font-weight: bold; background: rgba(255,71,87,0.1); padding: 4px 8px; border-radius: 4px;">Conflict ({} Requests)</span>', total_at_slot)
+        return format_html('<span style="color: #2ed573; font-weight: 500;">{}</span>', "No Conflict")
+    conflict_check.short_description = "Conflict Tracking"
+
+    def booking_status(self, obj):
+        if obj.status == 'pending':
+            accept_url = reverse('admin:accept-booking', args=[obj.pk])
+            cancel_url = reverse('admin:cancel-booking', args=[obj.pk])
+            return format_html(
+                '<div style="display: flex; gap: 8px;">'
+                '<a class="status-btn" href="{}" style="background-color: #28a745; color: white; padding: 6px 14px; text-decoration: none; border-radius: 4px; font-weight: 600; font-size: 12px; box-shadow: 0 2px 4px rgba(40,167,69,0.3);"><i class="fas fa-check"></i> Accept</a>'
+                '<a class="status-btn" href="{}" style="background-color: #dc3545; color: white; padding: 6px 14px; text-decoration: none; border-radius: 4px; font-weight: 600; font-size: 12px; box-shadow: 0 2px 4px rgba(220,53,69,0.3);"><i class="fas fa-times"></i> Cancel</a>'
+                '</div>',
+                accept_url, cancel_url
+            )
+        
+        # Color schemes for tags
+        styles = {
+            'accepted': 'background: #28a745; color: white;',
+            'cancelled': 'background: #dc3545; color: white;',
+        }
+        icons = {
+            'accepted': 'fa-check-circle',
+            'cancelled': 'fa-times-circle',
+        }
+        
+        return format_html(
+            '<span style="{} padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 11px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px;">'
+            '<i class="fas {}"></i> {}</span>',
+            styles.get(obj.status, ''),
+            icons.get(obj.status, ''),
+            obj.get_status_display()
+        )
+    booking_status.short_description = "Status & Actions"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('accept/<int:booking_id>/', self.admin_site.admin_view(self.accept_booking), name='accept-booking'),
+            path('cancel/<int:booking_id>/', self.admin_site.admin_view(self.cancel_booking), name='cancel-booking'),
+        ]
+        return custom_urls + urls
+
+    def accept_booking(self, request, booking_id):
+        booking = get_object_or_404(ServiceBooking, id=booking_id)
+        booking.status = 'accepted'
+        booking.save()
+        
+        # Send confirmation email
+        from .utils import send_portfolio_email
+        if booking.date_from == booking.date_to:
+            booking_date = booking.date_from.strftime('%d-%b-%y')
+        else:
+            booking_date = f"{booking.date_from.strftime('%d-%b-%y')} to {booking.date_to.strftime('%d-%b-%y')}"
+        
+        booking_time = f"{booking.time_from.strftime('%I:%M %p')} to {booking.time_to.strftime('%I:%M %p')}"
+        
+        subject = f"Booking Approved: {booking.service.title}"
+        body = f"Hello {booking.name},\n\nYour booking for '{booking.service.title}' on {booking_date} at {booking_time} has been APPROVED.\n\nWe look forward to seeing you.\n\nBest regards,\nPortfolio Team"
+        send_portfolio_email(subject, body, to_email=booking.email)
+        
+        self.message_user(request, f"Booking for {booking.name} accepted and email sent.")
+        return HttpResponseRedirect(reverse('admin:core_servicebooking_changelist'))
+
+    def cancel_booking(self, request, booking_id):
+        booking = get_object_or_404(ServiceBooking, id=booking_id)
+        booking.status = 'cancelled'
+        booking.save()
+        
+        # Send cancellation email
+        from .utils import send_portfolio_email
+        subject = f"Booking Update: {booking.service.title}"
+        body = f"Hello {booking.name},\n\nWe regret to inform you that the requested session for '{booking.service.title}' is not available at the requested time.\n\nWe encourage you to apply again for another time slot in the future.\n\nBest regards,\nPortfolio Team"
+        send_portfolio_email(subject, body, to_email=booking.email)
+        
+        self.message_user(request, f"Booking for {booking.name} cancelled and email sent.")
+        return HttpResponseRedirect(reverse('admin:core_servicebooking_changelist'))
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        services = Service.objects.all()
+        summary_data = []
+        
+        total_all = ServiceBooking.objects.count()
+        accepted_all = ServiceBooking.objects.filter(status='accepted').count()
+        pending_all = ServiceBooking.objects.filter(status='pending').count()
+        cancelled_all = ServiceBooking.objects.filter(status='cancelled').count()
+        
+        summary_data.append({
+            'name': 'Summary',
+            'total': f"{total_all:02d}",
+            'accepted': f"{accepted_all:02d}",
+            'pending': f"{pending_all:02d}",
+            'cancelled': f"{cancelled_all:02d}",
+            'is_summary': True
+        })
+        
+        for service in services:
+            total = service.bookings.count()
+            accepted = service.bookings.filter(status='accepted').count()
+            pending = service.bookings.filter(status='pending').count()
+            cancelled = service.bookings.filter(status='cancelled').count()
+            
+            summary_data.append({
+                'name': service.title,
+                'total': f"{total:02d}",
+                'accepted': f"{accepted:02d}",
+                'pending': f"{pending:02d}",
+                'cancelled': f"{cancelled:02d}",
+                'is_summary': False
+            })
+            
+        extra_context['summary_data'] = summary_data
+        return super().changelist_view(request, extra_context=extra_context)
+
+    change_list_template = "admin/core/servicebooking/change_list.html"
     
     fieldsets = (
         ('Customer Information', {
             'fields': ('name', 'email', 'phone')
         }),
         ('Booking Details', {
-            'fields': ('service', 'additional_message')
+            'fields': ('service', 'status', 'additional_message')
         }),
         ('Date Range', {
             'fields': (('date_from', 'date_to'),)
